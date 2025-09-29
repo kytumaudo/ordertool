@@ -345,6 +345,7 @@ function loadEntryStyles() {
 }
 
 // --- ORDER ENTRY & DYNAMIC UPDATE ---
+// MODIFIED: Added Notes column to the order entry block
 function displayInputBlock(code) {
     const product = products.find(p => p.code === code);
     if (!product) return;
@@ -352,16 +353,27 @@ function displayInputBlock(code) {
     const existingProduct = currentOrder.find(p => p.code === code);
     const qtyValues = existingProduct ? existingProduct.entries.filter(e => e.type === 'qty').map(e => e.value) : [];
     const pcsValues = existingProduct ? existingProduct.entries.filter(e => e.type === 'pcs').map(e => e.value) : [];
-    const rowCount = Math.max(8, qtyValues.length, pcsValues.length) + 1;
+    const noteValues = existingProduct ? existingProduct.entries.filter(e => e.type === 'note').map(e => e.value) : []; // Get existing notes
+    const rowCount = Math.max(8, qtyValues.length, pcsValues.length, noteValues.length) + 1;
     for(let i=0; i < rowCount; i++){
-        tableRows += `<tr><td><input type="text" class="qty-input" value="${qtyValues[i] || ''}"></td><td><input type="text" class="pcs-input" value="${pcsValues[i] || ''}"></td></tr>`;
+        tableRows += `<tr>
+                        <td><input type="text" class="qty-input" value="${qtyValues[i] || ''}"></td>
+                        <td><input type="text" class="pcs-input" value="${pcsValues[i] || ''}"></td>
+                        <td><input type="text" class="note-input" value="${noteValues[i] || ''}"></td>
+                      </tr>`;
     }
-    inputBlockContainer.innerHTML = `<div class="order-block" data-code="${product.code}" data-item="${product.item}"><div class="product-header">${product.code} - ${product.item}</div><table><thead><tr><th class="qty-header">Qty</th><th class="pcs-header">Qty (pcs/each)</th></tr></thead><tbody>${tableRows}</tbody></table></div>`;
+    inputBlockContainer.innerHTML = `<div class="order-block" data-code="${product.code}" data-item="${product.item}">
+                                        <div class="product-header">${product.code} - ${product.item}</div>
+                                        <table>
+                                            <thead><tr><th class="qty-header">Qty</th><th class="pcs-header">Qty (pcs/each)</th><th>Notes</th></tr></thead>
+                                            <tbody>${tableRows}</tbody>
+                                        </table>
+                                     </div>`;
     document.querySelectorAll('.sidebar-product-item').forEach(item => item.classList.remove('active'));
     document.querySelector(`.sidebar-product-item[data-code="${code}"]`)?.classList.add('active');
 }
 
-// REMOVED: Highlighting logic is gone from this function
+// MODIFIED: Syncs the new Notes field from the input block
 function syncOrderFromInputBlock() {
     const block = document.querySelector('.order-block');
     if (!block) return;
@@ -371,8 +383,10 @@ function syncOrderFromInputBlock() {
     block.querySelectorAll('tbody tr').forEach(row => {
         const qty = row.querySelector('.qty-input').value.trim();
         const pcs = row.querySelector('.pcs-input').value.trim();
+        const note = row.querySelector('.note-input').value.trim(); // Get note value
         if (qty) entries.push({ type: 'qty', value: qty });
         if (pcs) entries.push({ type: 'pcs', value: pcs });
+        if (note) entries.push({ type: 'note', value: note }); // Add note to entries if it exists
     });
     
     const existingProductIndex = currentOrder.findIndex(p => p.code === code);
@@ -390,34 +404,71 @@ function syncOrderFromInputBlock() {
     renderCurrentOrderTable();
 }
 
+// MODIFIED: Adds a new row with a Notes input field
 function addEntryRowIfNeeded(e) {
-    if (!e.target.matches('.qty-input, .pcs-input')) return;
+    if (!e.target.matches('.qty-input, .pcs-input, .note-input')) return; // Added .note-input
     const currentRow = e.target.closest('tr');
     if (currentRow && currentRow === currentRow.parentElement.lastElementChild) {
         const newRow = document.createElement('tr');
-        newRow.innerHTML = `<td><input type="text" class="qty-input"></td><td><input type="text" class="pcs-input"></td>`;
+        newRow.innerHTML = `<td><input type="text" class="qty-input"></td>
+                            <td><input type="text" class="pcs-input"></td>
+                            <td><input type="text" class="note-input"></td>`; // Added notes input
         currentRow.parentElement.appendChild(newRow);
     }
 }
 
-function handleKeyboardNavigation(e) { const target = e.target; const inputs = Array.from(document.querySelectorAll('.order-block .qty-input, .order-block .pcs-input')); const currentIndex = inputs.indexOf(target); if (currentIndex === -1) return; let nextIndex = -1; switch(e.key) { case 'Enter': case 'ArrowDown': nextIndex = currentIndex + 2; break; case 'ArrowUp': nextIndex = currentIndex - 2; break; case 'ArrowRight': if (target.classList.contains('qty-input')) nextIndex = currentIndex + 1; break; case 'ArrowLeft': if (target.classList.contains('pcs-input')) nextIndex = currentIndex - 1; break; } if (nextIndex >= 0 && nextIndex < inputs.length) { e.preventDefault(); inputs[nextIndex].focus(); } }
+// MODIFIED: Updated keyboard navigation for the new column
+function handleKeyboardNavigation(e) {
+    const target = e.target;
+    const inputs = Array.from(document.querySelectorAll('.order-block .qty-input, .order-block .pcs-input, .order-block .note-input'));
+    const currentIndex = inputs.indexOf(target);
+    if (currentIndex === -1) return;
+    let nextIndex = -1;
+    switch(e.key) {
+        case 'Enter':
+        case 'ArrowDown':
+            nextIndex = currentIndex + 3; // Jump to the next row
+            break;
+        case 'ArrowUp':
+            nextIndex = currentIndex - 3; // Jump to the previous row
+            break;
+        case 'ArrowRight':
+            if (!target.classList.contains('note-input')) { // Can't go right from notes
+                nextIndex = currentIndex + 1;
+            }
+            break;
+        case 'ArrowLeft':
+            if (!target.classList.contains('qty-input')) { // Can't go left from qty
+                nextIndex = currentIndex - 1;
+            }
+            break;
+    }
+    if (nextIndex >= 0 && nextIndex < inputs.length) {
+        e.preventDefault();
+        inputs[nextIndex].focus();
+    }
+}
 
+// MODIFIED: Renders the Current Order table with the new Notes column
 function renderCurrentOrderTable() {
     if (currentOrder.length === 0) {
         currentOrderContainer.innerHTML = '<p>No items in the current order.</p>';
         return;
     }
-    let tableHTML = '<table><thead><tr><th>CODE</th><th>ITEM</th><th>Qty</th><th>Qty (pcs/each)</th></tr></thead><tbody>';
+    let tableHTML = '<table><thead><tr><th>CODE</th><th>ITEM</th><th>Qty</th><th>Qty (pcs/each)</th><th>Notes</th></tr></thead><tbody>'; // Added Notes header
     currentOrder.forEach(p => {
         const qtyValues = p.entries.filter(e => e.type === 'qty').map(e => e.value);
         const pcsValues = p.entries.filter(e => e.type === 'pcs').map(e => e.value);
-        const maxRows = Math.max(qtyValues.length, pcsValues.length);
+        const noteValues = p.entries.filter(e => e.type === 'note').map(e => e.value); // Get note values
+        const maxRows = Math.max(qtyValues.length, pcsValues.length, noteValues.length);
         for (let i = 0; i < maxRows; i++) {
             tableHTML += '<tr>';
             if (i === 0) {
                 tableHTML += `<td rowspan="${maxRows}">${p.code}</td><td rowspan="${maxRows}">${p.item}</td>`;
             }
-            tableHTML += `<td class="qty-text">${qtyValues[i] || ''}</td><td class="pcs-text">${pcsValues[i] || ''}</td></tr>`;
+            tableHTML += `<td class="qty-text">${qtyValues[i] || ''}</td>
+                          <td class="pcs-text">${pcsValues[i] || ''}</td>
+                          <td>${noteValues[i] || ''}</td></tr>`; // Added note data cell
         }
     });
     tableHTML += '</tbody></table>';
@@ -425,7 +476,33 @@ function renderCurrentOrderTable() {
 }
 
 // --- ACTIONS ---
-function generateAndDownloadExcel() { if (currentOrder.length === 0) { alert("There are no orders to export."); return; } const data = [['CODE', 'ITEM', 'QTY', 'Qty (pcs/each)']]; currentOrder.forEach(p => { const qtyValues = p.entries.filter(e => e.type === 'qty').map(e => e.value); const pcsValues = p.entries.filter(e => e.type === 'pcs').map(e => e.value); const maxRows = Math.max(qtyValues.length, pcsValues.length); for (let i = 0; i < maxRows; i++) { data.push([p.code, p.item, qtyValues[i] || '', pcsValues[i] || '']); } }); const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "OrderSheet"); XLSX.writeFile(wb, `Order_${new Date().toISOString().slice(0, 10)}.xlsx`); }
+// MODIFIED: Excel export now includes the Notes column
+function generateAndDownloadExcel() {
+    if (currentOrder.length === 0) {
+        alert("There are no orders to export.");
+        return;
+    }
+    const data = [['CODE', 'ITEM', 'QTY', 'Qty (pcs/each)', 'NOTES']]; // Added NOTES to header
+    currentOrder.forEach(p => {
+        const qtyValues = p.entries.filter(e => e.type === 'qty').map(e => e.value);
+        const pcsValues = p.entries.filter(e => e.type === 'pcs').map(e => e.value);
+        const noteValues = p.entries.filter(e => e.type === 'note').map(e => e.value); // Get note values for export
+        const maxRows = Math.max(qtyValues.length, pcsValues.length, noteValues.length);
+        for (let i = 0; i < maxRows; i++) {
+            data.push([
+                p.code,
+                p.item,
+                qtyValues[i] || '',
+                pcsValues[i] || '',
+                noteValues[i] || '' // Add note value to the row
+            ]);
+        }
+    });
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "OrderSheet");
+    XLSX.writeFile(wb, `Order_${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
 
 // --- DRAG & DROP SORTING ---
 let draggedItem = null;
@@ -441,7 +518,7 @@ function getDragAfterElement(container, y) { const draggableElements = [...conta
 function initialize() {
     loadProducts(); loadSidebarColors(); loadHeaderColors(); loadFontSize(); loadEntryStyles(); renderProductLists(); renderCurrentOrderTable();
     
-    // NEW: Set the date picker to today's date on load
+    // THIS LINE SETS THE DATE TO TODAY. IT RUNS WHEN THE PAGE IS FRESHLY LOADED.
     document.getElementById('order-date-picker').valueAsDate = new Date();
 
     document.getElementById('open-product-modal-btn').onclick = () => productModal.style.display = 'flex';
