@@ -6,14 +6,22 @@
     <title>Professional Order Form</title>
     <!-- SheetJS library for creating Excel files -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
-        /* CSS styles remain the same as the previous version */
-        :root { --sidebar-bg: #343a40; --sidebar-text: #f8f9fa; --sidebar-text-muted: #adb5bd; --sidebar-hover-bg: #495057; --sidebar-active-bg: #007bff; --resizer-bg: #adb5bd; --header-bg: #ffc107; --header-text: #212529; --base-font-size: 16px; }
+        :root {
+            --sidebar-bg: #343a40;
+            --sidebar-text: #f8f9fa;
+            --sidebar-text-muted: #adb5bd;
+            --sidebar-hover-bg: #495057;
+            --sidebar-active-bg: #007bff;
+            --resizer-bg: #adb5bd;
+            --header-bg: #ffc107;
+            --header-text: #212529;
+            --base-font-size: 16px; /* Font size variable */
+        }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f8f9fa; color: #333; margin: 0; font-size: var(--base-font-size); }
         .main-layout { display: flex; height: 100vh; }
+        
+        /* Sidebar (Left Column) */
         .sidebar { min-width: 250px; max-width: 600px; width: 350px; background-color: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; }
         .sidebar-header { padding: 15px; background-color: #212529; }
         .sidebar-header h2 { margin: 0 0 15px 0; font-size: 1.2em; text-align: center; color: var(--sidebar-text); }
@@ -22,13 +30,18 @@
         .color-customizer { display: flex; justify-content: space-around; align-items: center; margin-top: 10px; }
         .color-customizer label { font-size: 0.9em; display: flex; align-items: center; gap: 5px; }
         .color-customizer input[type="color"] { width: 25px; height: 25px; border: none; padding: 0; background: none; cursor: pointer; }
+
         #sidebar-product-list { flex-grow: 1; overflow-y: auto; }
         .sidebar-product-item { padding: 12px 15px; border-bottom: 1px solid #495057; cursor: pointer; transition: background-color 0.2s; user-select: none; }
         .sidebar-product-item:hover { background-color: var(--sidebar-hover-bg); }
         .sidebar-product-item.active { background-color: var(--sidebar-active-bg); }
         .sidebar-product-item.dragging { opacity: 0.5; }
         .sidebar-product-item span { color: var(--sidebar-text-muted); font-size: 0.9em; margin-right: 8px; }
+
+        /* Resizer Handle */
         .resizer { width: 5px; background: var(--resizer-bg); cursor: col-resize; height: 100%; }
+
+        /* Main Content (Right Column) */
         .main-content { flex-grow: 1; padding: 20px 40px; overflow-y: auto; }
         h1, h2 { color: #0056b3; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-top: 30px; }
         .section { margin-bottom: 30px; }
@@ -38,6 +51,8 @@
         .btn-danger { background-color: #dc3545; } .btn-danger:hover { background-color: #c82333; }
         .btn-secondary { background-color: #6c757d; } .btn-secondary:hover { background-color: #5a6268; }
         .btn-edit { background-color: #ffc107; color: #212529; } .btn-edit:hover { background-color: #e0a800; }
+
+        /* Modal for Product Management */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
         .modal-content { background-color: #fefefe; padding: 30px; border: 1px solid #888; width: 80%; max-width: 800px; border-radius: 10px; }
         .modal-close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
@@ -45,6 +60,8 @@
         #product-management-form input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em; flex: 1; min-width: 200px; }
         #product-list-table { width: 100%; border-collapse: collapse; }
         #product-list-table th, #product-list-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+
+        /* Order Entry Block Styles */
         .order-block { border: 1px solid #ccc; border-radius: 8px; overflow: hidden; margin-top: 20px; }
         .order-block table { width: 100%; border-collapse: collapse; }
         .order-block th, .order-block td { border: 1px solid #ddd; padding: 0; text-align: center; }
@@ -54,116 +71,129 @@
         .pcs-header { background-color: #d1e7dd; }
         .qty-input { color: #dc3545; font-weight: bold; }
         .pcs-input { color: #0056b3; font-weight: bold; }
+
+        /* Current Order Table */
         #current-order-container table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         #current-order-container th, #current-order-container td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        
         .customization-controls { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; background-color: #e9ecef; padding: 15px; border-radius: 5px; }
         .customization-controls label { font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .customization-controls input[type="color"] { width: 30px; height: 30px; border: 1px solid #ccc; padding: 2px; background: none; cursor: pointer; }
-        .font-size-control button { font-size: 1.2em; line-height: 1; padding: 5px 12px; background-color: #343a40; color: #fff; border: 1px solid #6c757d; }
-        .font-size-control button:hover { background-color: #495057; }
+        .font-size-control button {
+            font-size: 1.2em;
+            line-height: 1;
+            padding: 5px 12px;
+            background-color: #343a40;
+            color: #fff;
+            border: 1px solid #6c757d;
+        }
+        .font-size-control button:hover {
+             background-color: #495057;
+        }
         .font-size-control span { margin: 0 10px; font-weight: bold; }
+
         @keyframes highlight { 0% { color: #0056b3; } 50% { color: #28a745; } 100% { color: #0056b3; } }
         .highlight { animation: highlight 1s ease; }
-        @media (max-width: 768px) { .main-layout { flex-direction: column; height: auto; } .sidebar { width: 100%; max-width: 100%; height: 40vh; } .resizer { display: none; } .main-content { padding: 15px; } }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; height: auto; }
+            .sidebar { width: 100%; max-width: 100%; height: 40vh; }
+            .resizer { display: none; }
+            .main-content { padding: 15px; }
+        }
     </style>
 </head>
 <body>
-    <!-- HTML Content remains the same -->
-    <div id="product-management-modal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <h2>Product Management</h2>
-            <form id="product-management-form">
-                <input type="text" id="product-code-input" placeholder="Code" required>
-                <input type="text" id="product-item-input" placeholder="Item Name" required>
-                <button type="submit" class="btn-primary">Add / Update</button>
-                <button type="button" id="cancel-edit-btn" class="btn-secondary" style="display: none;">Cancel Edit</button>
-            </form>
-            <div style="max-height: 40vh; overflow-y: auto;">
-                <table id="product-list-table">
-                    <thead><tr><th>CODE</th><th>ITEM</th><th>Actions</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+
+<!-- Modal for Product Management -->
+<div id="product-management-modal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <h2>Product Management</h2>
+        <form id="product-management-form">
+            <input type="text" id="product-code-input" placeholder="Code" required>
+            <input type="text" id="product-item-input" placeholder="Item Name" required>
+            <button type="submit" class="btn-primary">Add / Update</button>
+            <button type="button" id="cancel-edit-btn" class="btn-secondary" style="display: none;">Cancel Edit</button>
+        </form>
+        <div style="max-height: 40vh; overflow-y: auto;">
+            <table id="product-list-table">
+                <thead><tr><th>CODE</th><th>ITEM</th><th>Actions</th></tr></thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
-    <div class="main-layout">
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2>Product List</h2>
-                <div class="sidebar-controls">
-                    <input type="text" id="search-input" placeholder="Search by name or code...">
-                    <select id="sort-select">
-                        <option value="custom">Custom Order</option>
-                        <option value="code-asc">Sort by CODE (A-Z)</option>
-                        <option value="item-asc">Sort by ITEM (A-Z)</option>
-                    </select>
-                    <div class="color-customizer">
-                        <label>BG: <input type="color" id="bg-color-picker"></label>
-                        <label>Text: <input type="color" id="text-color-picker"></label>
-                    </div>
+</div>
+
+<div class="main-layout">
+    <!-- Left Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Product List</h2>
+            <div class="sidebar-controls">
+                <input type="text" id="search-input" placeholder="Search by name or code...">
+                <select id="sort-select">
+                    <option value="custom">Custom Order</option>
+                    <option value="code-asc">Sort by CODE (A-Z)</option>
+                    <option value="item-asc">Sort by ITEM (A-Z)</option>
+                </select>
+                <div class="color-customizer">
+                    <label>BG: <input type="color" id="bg-color-picker"></label>
+                    <label>Text: <input type="color" id="text-color-picker"></label>
                 </div>
             </div>
-            <div id="sidebar-product-list"></div>
         </div>
-        <div class="resizer" id="drag-handle"></div>
-        <div class="main-content">
-            <h1>Order Form</h1>
-            <div class="section"><button id="open-product-modal-btn" class="btn-secondary">Manage Products</button></div>
-            <div class="section">
-                <h2>Interface Customization</h2>
-                <div class="customization-controls">
-                    <label>Header BG Color: <input type="color" id="header-bg-picker"></label>
-                    <label>Header Text Color: <input type="color" id="header-text-picker"></label>
-                    <label class="font-size-control">
-                        Font Size:
-                        <button id="decrease-font-btn">-</button>
-                        <span id="font-size-display">16px</span>
-                        <button id="increase-font-btn">+</button>
-                    </label>
-                </div>
+        <div id="sidebar-product-list"></div>
+    </div>
+    
+    <div class="resizer" id="drag-handle"></div>
+
+    <!-- Right Main Content -->
+    <div class="main-content">
+        <h1>Order Form</h1>
+
+        <div class="section">
+            <button id="open-product-modal-btn" class="btn-secondary">Manage Products</button>
+        </div>
+
+        <div class="section">
+            <h2>Interface Customization</h2>
+            <div class="customization-controls">
+                <label>Header BG Color: <input type="color" id="header-bg-picker"></label>
+                <label>Header Text Color: <input type="color" id="header-text-picker"></label>
+                <label class="font-size-control">
+                    Font Size:
+                    <button id="decrease-font-btn">-</button>
+                    <span id="font-size-display">16px</span>
+                    <button id="increase-font-btn">+</button>
+                </label>
             </div>
-            <div class="section">
-                <h2 id="order-entry-title">Order Entry</h2>
-                <div id="input-block-container"><p><i>Please select a product from the list on the left to begin.</i></p></div>
+        </div>
+
+        <div class="section">
+            <h2 id="order-entry-title">Order Entry</h2>
+            <div id="input-block-container">
+                <p><i>Please select a product from the list on the left to begin.</i></p>
             </div>
-            <div class="section">
-                <h2 id="current-order-title">Current Order</h2>
-                <div id="current-order-container"></div>
-            </div>
-            <div class="section" style="display: flex; gap: 15px;">
-                <button id="export-excel-btn" class="btn-success">Export to Excel</button>
-                <button id="clear-all-btn" class="btn-danger">Clear Order</button>
-            </div>
+        </div>
+
+        <div class="section">
+            <h2 id="current-order-title">Current Order</h2>
+            <div id="current-order-container"></div>
+        </div>
+
+        <div class="section" style="display: flex; gap: 15px;">
+            <button id="export-excel-btn" class="btn-success">Export to Excel</button>
+            <button id="clear-all-btn" class="btn-danger">Clear Order</button>
         </div>
     </div>
+</div>
 
 <script>
-// --- START OF FIREBASE SETUP ---
-const firebaseConfig = {
-  apiKey: "AIzaSyBZ3a1botbPzUukd33Byyi0lVQ5HdwnONU",
-  authDomain: "ordertool-da501.firebaseapp.com",
-  databaseURL: "https://ordertool-da501-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "ordertool-da501",
-  storageBucket: "ordertool-da501.firebasestorage.app",
-  messagingSenderId: "301837663509",
-  appId: "1:301837663509:web:90536e72857c34d18d7d1c",
-  measurementId: "G-Q4FG9BDVVP"
-};
-
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const productsRef = db.ref('products');
-const ordersRef = db.ref('orders');
-// --- END OF FIREBASE SETUP ---
-
-
 // --- STATE & DOM ELEMENTS ---
 let products = [];
 let currentOrder = [];
-// ... (all other DOM element constants remain the same)
 const sidebar = document.getElementById('sidebar');
 const productModal = document.getElementById('product-management-modal');
 const productForm = document.getElementById('product-management-form');
@@ -187,32 +217,59 @@ const increaseFontBtn = document.getElementById('increase-font-btn');
 const fontSizeDisplay = document.getElementById('font-size-display');
 const currentOrderTitle = document.getElementById('current-order-title');
 
+
 // --- PRODUCT MANAGEMENT ---
-function saveProducts() { 
-    // Convert array to object for Firebase
-    const productsObj = {};
-    products.forEach((p, index) => {
-        productsObj[p.code] = { item: p.item, order: index }; // Use code as key, add order for custom sort
-    });
-    productsRef.set(productsObj); 
-}
+function saveProducts() { localStorage.setItem('orderProductsV6', JSON.stringify(products)); }
 function loadProducts() {
-    productsRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            products = Object.keys(data).map(code => ({
-                code: code,
-                item: data[code].item,
-                order: data[code].order !== undefined ? data[code].order : Infinity
-            }));
-            products.sort((a,b) => a.order - b.order); // Sort by custom order
-        } else {
-            // Set default products if database is empty
-            products = [{"code":"10110","item":"WHOLE CHICKEN - SIZE 10 (Each)"},{"code":"10112","item":"WHOLE CHICKEN - SIZE 12 (Each)"},{"code":"20002","item":"CHICKEN M/LAND MED/ BONE IN"}];
-            saveProducts(); // Save defaults to Firebase
-        }
-        renderProductLists();
-    });
+    const stored = localStorage.getItem('orderProductsV6');
+    // *** UPDATED: Full product list is now the default ***
+    products = stored ? JSON.parse(stored) : [
+        {"code":"81007","item":"BANNOCKBURN F/RANGE RANDOM (Each)"},
+        {"code":"50049","item":"BF S/OFF 250-300GR"},
+        {"code":"50602","item":"BF S/OFF 250GR (BUTTERFLIED)"},
+        {"code":"50035","item":"BF S/OFF 300-350GR"},
+        {"code":"53002","item":"BF S/OFF DICE (20C)"},
+        {"code":"55000","item":"BF S/OFF STRIP (THIN)"},
+        {"code":"50001","item":"BF S/OFF UNDER 200GR"},
+        {"code":"51041","item":"BF S/ON 250-300GR"},
+        {"code":"51035","item":"BF S/ON 300-350GR"},
+        {"code":"51603","item":"BF S/ON MED (NO T/L)"},
+        {"code":"51001","item":"BF S/ON UNDER 200GR"},
+        {"code":"22002","item":"CHICKEN SUP. MED"},
+        {"code":"32000","item":"CHICKEN DRUMETTES"},
+        {"code":"87004","item":"CHICKEN DRUMSTICKS LGE"},
+        {"code":"95000","item":"CHICKEN FEET FRESH (20KG/BOX) (Box)"},
+        {"code":"96200","item":"CHICKEN FRAME ONLY (Box)"},
+        {"code":"92000","item":"CHICKEN GIBLETS (Box)"},
+        {"code":"91000","item":"CHICKEN LIVER (Box)"},
+        {"code":"20002","item":"CHICKEN M/LAND MED/ BONE IN"},
+        {"code":"94000","item":"CHICKEN NECK (Box)"},
+        {"code":"42100","item":"CHICKEN RIBS - SKIN ON"},
+        {"code":"42000","item":"CHICKEN RIBS S/OFF"},
+        {"code":"11536","item":"CHICKEN SCHNITZEL H/CUT LARGE (GT) (Box)"},
+        {"code":"100777","item":"CHICKEN SKINS"},
+        {"code":"41000","item":"CHICKEN TENDERLOIN"},
+        {"code":"31000","item":"CHICKEN WGETTES"},
+        {"code":"30004","item":"CHICKEN WING LGE"},
+        {"code":"34000","item":"CHICKEN WINGS XL NO-TIP"},
+        {"code":"43100","item":"CHOPS -SKIN ON"},
+        {"code":"44149","item":"KIEV CUT S/ON 250-300GR (POLISHED)"},
+        {"code":"60004","item":"MF S/OFF - LGE"},
+        {"code":"65000","item":"MF S/OFF - STRIP (THIN)"},
+        {"code":"61004","item":"MF S/ON - LGE"},
+        {"code":"70004","item":"TF S/OFF - LGE"},
+        {"code":"12012","item":"W/CHICKEN - 12 (DEBONED - WG ON) (Each)"},
+        {"code":"12014","item":"W/CHICKEN - 14 (DEBONED - WG ON) (Each)"},
+        {"code":"12016","item":"W/CHICKEN - 16 (DEBONED - WG ON) (Each)"},
+        {"code":"12018","item":"W/CHICKEN - 18 (DEBONED - WG ON) (Each)"},
+        {"code":"12020","item":"W/CHICKEN - 20 (DEBONED - WG ON) (Each)"},
+        {"code":"10110","item":"WHOLE CHICKEN - SIZE 10 (Each)"},
+        {"code":"10112","item":"WHOLE CHICKEN - SIZE 12 (Each)"},
+        {"code":"10114","item":"WHOLE CHICKEN - SIZE 14 (Each)"},
+        {"code":"10116","item":"WHOLE CHICKEN - SIZE 16 (Each)"},
+        {"code":"10118","item":"WHOLE CHICKEN - SIZE 18 (Each)"},
+        {"code":"10120","item":"WHOLE CHICKEN - SIZE 20 (Each)"}
+    ];
 }
 function renderProductLists() {
     handleSort();
@@ -231,11 +288,11 @@ function renderProductLists() {
     });
 }
 function resetProductForm() { productForm.reset(); productCodeInput.readOnly = false; cancelEditBtn.style.display = 'none'; }
-function handleProductFormSubmit(e) { e.preventDefault(); const code = productCodeInput.value.trim(); const item = productItemInput.value.trim(); if (!code || !item) return; const existing = products.find(p => p.code === code); if (existing) existing.item = item; else products.push({ code, item, order: products.length }); saveProducts(); resetProductForm(); }
-function handleProductActions(e) { const target = e.target; const code = target.dataset.code; if (target.classList.contains('btn-danger')) { if (confirm(`Delete product with code ${code}?`)) { products = products.filter(p => p.code !== code); saveProducts(); } } else if (target.classList.contains('btn-edit')) { const product = products.find(p => p.code === code); productCodeInput.value = product.code; productItemInput.value = product.item; productCodeInput.readOnly = true; cancelEditBtn.style.display = 'inline-block'; } }
+function handleProductFormSubmit(e) { e.preventDefault(); const code = productCodeInput.value.trim(); const item = productItemInput.value.trim(); if (!code || !item) return; const existing = products.find(p => p.code === code); if (existing) existing.item = item; else products.push({ code, item }); saveProducts(); renderProductLists(); resetProductForm(); }
+function handleProductActions(e) { const target = e.target; const code = target.dataset.code; if (target.classList.contains('btn-danger')) { if (confirm(`Delete product with code ${code}?`)) { products = products.filter(p => p.code !== code); saveProducts(); renderProductLists(); } } else if (target.classList.contains('btn-edit')) { const product = products.find(p => p.code === code); productCodeInput.value = product.code; productItemInput.value = product.item; productCodeInput.readOnly = true; cancelEditBtn.style.display = 'inline-block'; } }
 
-// --- UI CUSTOMIZATION --- (No changes here)
-function handleSort() { const sortBy = sortSelect.value; if (sortBy === 'custom') { products.sort((a,b) => a.order - b.order); return; }; products.sort((a, b) => { if (sortBy === 'code-asc') return a.code.localeCompare(b.code, undefined, { numeric: true }); if (sortBy === 'item-asc') return a.item.localeCompare(b.item); }); }
+// --- UI CUSTOMIZATION ---
+function handleSort() { const sortBy = sortSelect.value; if (sortBy === 'custom') return; products.sort((a, b) => { if (sortBy === 'code-asc') return a.code.localeCompare(b.code, undefined, { numeric: true }); if (sortBy === 'item-asc') return a.item.localeCompare(b.item); }); }
 function handleSidebarColorChange() { const bgColor = bgColorPicker.value; const textColor = textColorPicker.value; document.documentElement.style.setProperty('--sidebar-bg', bgColor); document.documentElement.style.setProperty('--sidebar-text', textColor); localStorage.setItem('sidebarColors', JSON.stringify({ bg: bgColor, text: textColor })); }
 function loadSidebarColors() { const stored = JSON.parse(localStorage.getItem('sidebarColors')); if (stored) { bgColorPicker.value = stored.bg; textColorPicker.value = stored.text; } else { bgColorPicker.value = '#343a40'; textColorPicker.value = '#f8f9fa'; } handleSidebarColorChange(); }
 function handleHeaderColorChange() { const bgColor = headerBgPicker.value; const textColor = headerTextPicker.value; document.documentElement.style.setProperty('--header-bg', bgColor); document.documentElement.style.setProperty('--header-text', textColor); localStorage.setItem('headerColors', JSON.stringify({ bg: bgColor, text: textColor })); }
@@ -243,74 +300,11 @@ function loadHeaderColors() { const stored = JSON.parse(localStorage.getItem('he
 function handleFontSizeChange(amount) { let currentSize = parseFloat(getComputedStyle(document.body).fontSize); currentSize += amount; if (currentSize < 12 || currentSize > 24) return; document.documentElement.style.setProperty('--base-font-size', `${currentSize}px`); fontSizeDisplay.textContent = `${currentSize}px`; localStorage.setItem('fontSize', currentSize); }
 function loadFontSize() { const storedSize = localStorage.getItem('fontSize'); const size = storedSize ? parseFloat(storedSize) : 16; document.documentElement.style.setProperty('--base-font-size', `${size}px`); fontSizeDisplay.textContent = `${size}px`; }
 
-
 // --- ORDER ENTRY & KEYBOARD NAVIGATION ---
 function displayInputBlock(code) { const product = products.find(p => p.code === code); if (!product) return; let tableRows = Array(8).fill('<tr><td><input type="text" class="qty-input"></td><td><input type="text" class="pcs-input"></td></tr>').join(''); inputBlockContainer.innerHTML = `<div class="order-block" data-code="${product.code}" data-item="${product.item}"><div class="product-header">${product.code} - ${product.item}</div><table><thead><tr><th class="qty-header">Qty</th><th class="pcs-header">Qty (pcs/each)</th></tr></thead><tbody>${tableRows}</tbody></table><div style="padding: 15px; text-align: right;"><button id="add-to-order-btn" class="btn-primary">Add to Order</button></div></div>`; document.querySelectorAll('.sidebar-product-item').forEach(item => item.classList.remove('active')); document.querySelector(`.sidebar-product-item[data-code="${code}"]`)?.classList.add('active'); }
 function handleKeyboardNavigation(e) { const target = e.target; const inputs = Array.from(document.querySelectorAll('.order-block .qty-input, .order-block .pcs-input')); const currentIndex = inputs.indexOf(target); if (currentIndex === -1) return; let nextIndex = -1; switch(e.key) { case 'Enter': case 'ArrowDown': nextIndex = currentIndex + 2; break; case 'ArrowUp': nextIndex = currentIndex - 2; break; case 'ArrowRight': if (target.classList.contains('qty-input')) nextIndex = currentIndex + 1; break; case 'ArrowLeft': if (target.classList.contains('pcs-input')) nextIndex = currentIndex - 1; break; } if (nextIndex >= 0 && nextIndex < inputs.length) { e.preventDefault(); inputs[nextIndex].focus(); } }
-function handleAddToOrder() {
-    const block = document.querySelector('.order-block');
-    const code = block.dataset.code;
-    const item = block.dataset.item;
-    const entries = [];
-    block.querySelectorAll('.qty-input').forEach(input => { if (input.value.trim()) entries.push({ type: 'qty', value: input.value.trim() }); });
-    block.querySelectorAll('.pcs-input').forEach(input => { if (input.value.trim()) entries.push({ type: 'pcs', value: input.value.trim() }); });
-    if (entries.length === 0) { alert("Please enter a quantity."); return; }
-    
-    // Push to Firebase instead of local array
-    ordersRef.push({
-        code: code,
-        item: item,
-        entries: entries,
-        timestamp: firebase.database.ServerValue.TIMESTAMP // Add server timestamp
-    });
-    
-    inputBlockContainer.innerHTML = '<p><i>Please select a product from the list on the left to continue.</i></p>';
-    document.querySelectorAll('.sidebar-product-item').forEach(item => item.classList.remove('active'));
-    currentOrderTitle.classList.add('highlight');
-    setTimeout(() => currentOrderTitle.classList.remove('highlight'), 1000);
-}
-function loadAndRenderCurrentOrder() {
-    ordersRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        currentOrder = []; // Reset local order list
-        if (data) {
-            // Convert Firebase object to array
-            const allEntries = Object.values(data);
-            
-            // Group entries by product code
-            const grouped = allEntries.reduce((acc, entry) => {
-                acc[entry.code] = acc[entry.code] || { code: entry.code, item: entry.item, entries: [] };
-                acc[entry.code].entries.push(...entry.entries);
-                return acc;
-            }, {});
-            currentOrder = Object.values(grouped);
-        }
-        
-        // Render the table
-        if (currentOrder.length === 0) {
-            currentOrderContainer.innerHTML = '<p>No items in the current order.</p>';
-            return;
-        }
-        let tableHTML = '<table><thead><tr><th>CODE</th><th>ITEM</th><th>Qty</th><th>Qty (pcs/each)</th></tr></thead><tbody>';
-        currentOrder.forEach(p => {
-            const qtyValues = p.entries.filter(e => e.type === 'qty').map(e => e.value);
-            const pcsValues = p.entries.filter(e => e.type === 'pcs').map(e => e.value);
-            const maxRows = Math.max(qtyValues.length, pcsValues.length);
-            for (let i = 0; i < maxRows; i++) {
-                tableHTML += '<tr>';
-                if (i === 0) tableHTML += `<td rowspan="${maxRows}">${p.code}</td><td rowspan="${maxRows}">${p.item}</td>`;
-                tableHTML += `<td>${qtyValues[i] || ''}</td><td>${pcsValues[i] || ''}</td></tr>`;
-            }
-        });
-        tableHTML += '</tbody></table>';
-        currentOrderContainer.innerHTML = tableHTML;
-    });
-}
-function handleClearAllOrder() {
-    if (confirm('Clear the entire current order? This cannot be undone.')) {
-        ordersRef.remove(); // This will clear all orders and trigger the 'on' listener to update the UI
-    }
-}
+function handleAddToOrder() { const block = document.querySelector('.order-block'); const code = block.dataset.code; const item = block.dataset.item; const entries = []; block.querySelectorAll('.qty-input').forEach(input => { if (input.value.trim()) entries.push({ type: 'qty', value: input.value.trim() }); }); block.querySelectorAll('.pcs-input').forEach(input => { if (input.value.trim()) entries.push({ type: 'pcs', value: input.value.trim() }); }); if (entries.length === 0) { alert("Please enter a quantity."); return; } const existingProduct = currentOrder.find(p => p.code === code); if (existingProduct) { existingProduct.entries.push(...entries); } else { currentOrder.push({ code, item, entries }); } renderCurrentOrderTable(); inputBlockContainer.innerHTML = '<p><i>Please select a product from the list on the left to continue.</i></p>'; document.querySelectorAll('.sidebar-product-item').forEach(item => item.classList.remove('active')); currentOrderTitle.classList.add('highlight'); setTimeout(() => currentOrderTitle.classList.remove('highlight'), 1000); }
+function renderCurrentOrderTable() { if (currentOrder.length === 0) { currentOrderContainer.innerHTML = '<p>No items in the current order.</p>'; return; } let tableHTML = '<table><thead><tr><th>CODE</th><th>ITEM</th><th>Qty</th><th>Qty (pcs/each)</th></tr></thead><tbody>'; currentOrder.forEach(p => { const qtyValues = p.entries.filter(e => e.type === 'qty').map(e => e.value); const pcsValues = p.entries.filter(e => e.type === 'pcs').map(e => e.value); const maxRows = Math.max(qtyValues.length, pcsValues.length); for (let i = 0; i < maxRows; i++) { tableHTML += '<tr>'; if (i === 0) tableHTML += `<td rowspan="${maxRows}">${p.code}</td><td rowspan="${maxRows}">${p.item}</td>`; tableHTML += `<td>${qtyValues[i] || ''}</td><td>${pcsValues[i] || ''}</td></tr>`; } }); tableHTML += '</tbody></table>'; currentOrderContainer.innerHTML = tableHTML; }
 
 // --- ACTIONS ---
 function generateAndDownloadExcel() { if (currentOrder.length === 0) { alert("There are no orders to export."); return; } const data = [['CODE', 'ITEM', 'QTY', 'Qty (pcs/each)']]; currentOrder.forEach(p => { p.entries.forEach(entry => { if (entry.type === 'qty') data.push([p.code, p.item, entry.value, '']); else data.push([p.code, p.item, '', entry.value]); }); }); const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "OrderSheet"); XLSX.writeFile(wb, `Order_${new Date().toISOString().slice(0, 10)}.xlsx`); }
@@ -321,27 +315,13 @@ function handleDragAndDrop() {
     sidebarProductList.addEventListener('dragstart', e => { draggedItem = e.target; setTimeout(() => e.target.classList.add('dragging'), 0); });
     sidebarProductList.addEventListener('dragend', e => { draggedItem.classList.remove('dragging'); });
     sidebarProductList.addEventListener('dragover', e => { e.preventDefault(); const afterElement = getDragAfterElement(sidebarProductList, e.clientY); const current = document.querySelector('.dragging'); if (afterElement == null) { sidebarProductList.appendChild(current); } else { sidebarProductList.insertBefore(current, afterElement); } });
-    sidebarProductList.addEventListener('drop', e => {
-        const newOrderedProducts = [];
-        sidebarProductList.querySelectorAll('.sidebar-product-item').forEach(item => {
-            const product = products.find(p => p.code === item.dataset.code);
-            if(product) newOrderedProducts.push(product);
-        });
-        products = newOrderedProducts;
-        sortSelect.value = 'custom';
-        saveProducts(); // Save the new custom order
-    });
+    sidebarProductList.addEventListener('drop', e => { const newOrder = Array.from(sidebarProductList.querySelectorAll('.sidebar-product-item')).map(item => item.dataset.code); products.sort((a, b) => newOrder.indexOf(a.code) - newOrder.indexOf(b.code)); sortSelect.value = 'custom'; saveProducts(); });
 }
 function getDragAfterElement(container, y) { const draggableElements = [...container.querySelectorAll('.sidebar-product-item:not(.dragging)')]; return draggableElements.reduce((closest, child) => { const box = child.getBoundingClientRect(); const offset = y - box.top - box.height / 2; if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; } else { return closest; } }, { offset: Number.NEGATIVE_INFINITY }).element; }
 
 // --- INITIALIZATION ---
 function initialize() {
-    loadProducts(); 
-    loadSidebarColors(); 
-    loadHeaderColors(); 
-    loadFontSize(); 
-    loadAndRenderCurrentOrder(); // Load orders from Firebase
-    
+    loadProducts(); loadSidebarColors(); loadHeaderColors(); loadFontSize(); renderProductLists(); renderCurrentOrderTable();
     // Modal Events
     document.getElementById('open-product-modal-btn').onclick = () => productModal.style.display = 'flex';
     document.querySelector('.modal-close').onclick = () => productModal.style.display = 'none';
@@ -355,7 +335,7 @@ function initialize() {
     inputBlockContainer.addEventListener('keydown', handleKeyboardNavigation);
     // Action Events
     exportExcelBtn.addEventListener('click', generateAndDownloadExcel);
-    clearAllBtn.addEventListener('click', handleClearAllOrder);
+    clearAllBtn.addEventListener('click', () => { if (confirm('Clear the entire current order?')) { currentOrder = []; renderCurrentOrderTable(); inputBlockContainer.innerHTML = '<p><i>Please select a product from the list on the left to begin.</i></p>'; document.querySelectorAll('.sidebar-product-item').forEach(item => item.classList.remove('active')); } });
     // Controls Events
     searchInput.addEventListener('input', renderProductLists);
     sortSelect.addEventListener('change', renderProductLists);
@@ -371,7 +351,8 @@ function initialize() {
     resizer.addEventListener('mousedown', function(e) { e.preventDefault(); window.addEventListener('mousemove', resize); window.addEventListener('mouseup', stopResize); });
     function resize(e) { const newWidth = e.clientX - sidebar.getBoundingClientRect().left; sidebar.style.width = newWidth + 'px'; }
     function stopResize() { window.removeEventListener('mousemove', resize); window.removeEventListener('mouseup', stopResize); }
-    
+
+    // Drag and Drop
     handleDragAndDrop();
 }
 
