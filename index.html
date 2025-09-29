@@ -58,9 +58,34 @@
 
         .resizer { width: 5px; background: var(--resizer-bg); cursor: col-resize; height: 100%; flex-shrink: 0; }
 
-        .order-entry-column, .current-order-column { flex-grow: 1; padding: 20px 30px; overflow-y: auto; min-width: 250px; }
-        h1, h2 { color: #0056b3; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; }
+        .order-entry-column, .current-order-column { flex-grow: 1; padding: 20px 30px; overflow-y: auto; min-width: 250px; display: flex; flex-direction: column;}
+        h2 { color: #0056b3; }
         
+        /* NEW: Container for column headers like "Current Order" and the date picker */
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+        .column-header h2 {
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+        #order-date-picker {
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9em;
+            background-color: #fff;
+        }
+        #current-order-container { flex-grow: 1; overflow-y: auto; }
+
+
         button { padding: 10px 20px; border: none; border-radius: 5px; font-size: 1em; font-weight: bold; cursor: pointer; transition: all 0.2s; color: #fff; }
         .btn-primary { background-color: #007bff; } .btn-primary:hover { background-color: #0069d9; }
         .btn-success { background-color: #28a745; } .btn-success:hover { background-color: #218838; }
@@ -87,18 +112,10 @@
         .pcs-input { color: var(--pcs-text-color); font-weight: var(--pcs-font-weight); }
 
         #current-order-container table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        /* UPDATED: Reduced padding further for smaller row height */
         #current-order-container th, #current-order-container td { border: 1px solid #ddd; padding: 6px 12px; text-align: left; }
         
-        /* NEW: Classes to style text in the current order table */
-        .qty-text {
-            color: var(--qty-text-color);
-            font-weight: var(--qty-font-weight);
-        }
-        .pcs-text {
-            color: var(--pcs-text-color);
-            font-weight: var(--pcs-font-weight);
-        }
+        .qty-text { color: var(--qty-text-color); font-weight: var(--qty-font-weight); }
+        .pcs-text { color: var(--pcs-text-color); font-weight: var(--pcs-font-weight); }
 
         .customization-controls label { font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .customization-controls input[type="color"] { width: 30px; height: 30px; border: 1px solid #ccc; padding: 2px; background: none; cursor: pointer; }
@@ -107,9 +124,6 @@
         }
         .font-size-control button:hover { background-color: #495057; }
         .font-size-control span { margin: 0 10px; font-weight: bold; }
-
-        @keyframes highlight { 0% { color: #0056b3; } 50% { color: #28a745; } 100% { color: #0056b3; } }
-        .highlight { animation: highlight 1s ease; }
 
         @media (max-width: 900px) {
             body { height: auto; }
@@ -194,7 +208,9 @@
 
     <!-- Middle Column: Order Entry -->
     <div class="order-entry-column">
-        <h2 id="order-entry-title">Order Entry</h2>
+        <div class="column-header">
+            <h2 id="order-entry-title">Order Entry</h2>
+        </div>
         <div id="input-block-container">
             <p><i>Please select a product from the list on the left to begin.</i></p>
         </div>
@@ -204,7 +220,11 @@
 
     <!-- Right Column: Current Order -->
     <div class="current-order-column">
-        <h2 id="current-order-title">Current Order</h2>
+        <!-- UPDATED: Header now includes the date picker -->
+        <div class="column-header">
+            <h2 id="current-order-title">Current Order</h2>
+            <input type="date" id="order-date-picker">
+        </div>
         <div id="current-order-container"></div>
     </div>
 </div>
@@ -341,6 +361,7 @@ function displayInputBlock(code) {
     document.querySelector(`.sidebar-product-item[data-code="${code}"]`)?.classList.add('active');
 }
 
+// REMOVED: Highlighting logic is gone from this function
 function syncOrderFromInputBlock() {
     const block = document.querySelector('.order-block');
     if (!block) return;
@@ -361,8 +382,6 @@ function syncOrderFromInputBlock() {
         } else {
             currentOrder.push({ code, item, entries });
         }
-        currentOrderTitle.classList.add('highlight');
-        setTimeout(() => currentOrderTitle.classList.remove('highlight'), 1000);
     } else {
         if (existingProductIndex > -1) {
             currentOrder.splice(existingProductIndex, 1);
@@ -383,7 +402,6 @@ function addEntryRowIfNeeded(e) {
 
 function handleKeyboardNavigation(e) { const target = e.target; const inputs = Array.from(document.querySelectorAll('.order-block .qty-input, .order-block .pcs-input')); const currentIndex = inputs.indexOf(target); if (currentIndex === -1) return; let nextIndex = -1; switch(e.key) { case 'Enter': case 'ArrowDown': nextIndex = currentIndex + 2; break; case 'ArrowUp': nextIndex = currentIndex - 2; break; case 'ArrowRight': if (target.classList.contains('qty-input')) nextIndex = currentIndex + 1; break; case 'ArrowLeft': if (target.classList.contains('pcs-input')) nextIndex = currentIndex - 1; break; } if (nextIndex >= 0 && nextIndex < inputs.length) { e.preventDefault(); inputs[nextIndex].focus(); } }
 
-// UPDATED: Function now adds classes to the quantity cells
 function renderCurrentOrderTable() {
     if (currentOrder.length === 0) {
         currentOrderContainer.innerHTML = '<p>No items in the current order.</p>';
@@ -399,7 +417,6 @@ function renderCurrentOrderTable() {
             if (i === 0) {
                 tableHTML += `<td rowspan="${maxRows}">${p.code}</td><td rowspan="${maxRows}">${p.item}</td>`;
             }
-            // Applying classes for styling
             tableHTML += `<td class="qty-text">${qtyValues[i] || ''}</td><td class="pcs-text">${pcsValues[i] || ''}</td></tr>`;
         }
     });
@@ -424,6 +441,9 @@ function getDragAfterElement(container, y) { const draggableElements = [...conta
 function initialize() {
     loadProducts(); loadSidebarColors(); loadHeaderColors(); loadFontSize(); loadEntryStyles(); renderProductLists(); renderCurrentOrderTable();
     
+    // NEW: Set the date picker to today's date on load
+    document.getElementById('order-date-picker').valueAsDate = new Date();
+
     document.getElementById('open-product-modal-btn').onclick = () => productModal.style.display = 'flex';
     document.querySelector('.modal-close').onclick = () => productModal.style.display = 'none';
     window.onclick = (e) => { if (e.target == productModal) productModal.style.display = "none"; };
