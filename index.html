@@ -16,9 +16,13 @@
             --resizer-bg: #adb5bd;
             --header-bg: #ffc107;
             --header-text: #212529;
-            --base-font-size: 16px; /* Font size variable */
+            --base-font-size: 16px;
 
-            /* Variables for entry text styling */
+            --sidebar-header-bg: #212529;
+            --sidebar-header-text: #f8f9fa;
+
+            --item-text-color: #212529; 
+            --item-font-weight: normal; 
             --qty-text-color: #dc3545;
             --qty-font-weight: bold;
             --pcs-text-color: #0056b3;
@@ -26,28 +30,40 @@
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f8f9fa; color: #333; margin: 0; font-size: var(--base-font-size); display: flex; flex-direction: column; height: 100vh; }
         
-        .top-toolbar {
-            padding: 10px 25px;
-            background-color: #e9ecef;
-            border-bottom: 2px solid #dee2e6;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 20px;
+        .top-toolbar { padding: 10px 15px; background-color: #e9ecef; border-bottom: 2px solid #dee2e6; display: flex; flex-wrap: wrap; align-items: center; gap: 15px; }
+        .toolbar-section { display: flex; flex-wrap: nowrap; align-items: center; gap: 15px; position: relative; }
+        .toolbar-actions { margin-left: auto; display: flex; gap: 15px; } 
+
+        .popover {
+            position: absolute;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            z-index: 1001;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 250px;
         }
-        .toolbar-section { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; }
-        .toolbar-section h2 { margin: 0; font-size: 1em; color: #495057; border: none; padding: 0; }
+        .popover.show { display: flex; }
+        .popover-section { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        .popover-section label { font-size: 0.9em; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .popover-section input[type="color"] { width: 25px; height: 25px; border: 1px solid #ccc; padding: 1px; cursor: pointer; }
+        .font-size-control button { font-size: 1em; line-height: 1; padding: 3px 8px; }
+        .font-size-control span { margin: 0 8px; font-weight: bold; }
 
         .main-layout { display: flex; flex-grow: 1; overflow: hidden; }
-        
         .sidebar { min-width: 250px; width: 350px; background-color: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; background-color: #212529; }
-        .sidebar-header h2 { margin: 0 0 15px 0; font-size: 1.2em; text-align: center; color: var(--sidebar-text); }
+        .sidebar-header { padding: 15px; background-color: var(--sidebar-header-bg); color: var(--sidebar-header-text); }
+        .sidebar-header h2 { margin: 0 0 15px 0; font-size: 1.2em; text-align: center; color: var(--sidebar-header-text); }
         .sidebar-controls { display: flex; flex-direction: column; gap: 10px; }
         .sidebar-controls input, .sidebar-controls select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #6c757d; background-color: #495057; color: var(--sidebar-text); box-sizing: border-box; }
-        .color-customizer { display: flex; justify-content: space-around; align-items: center; margin-top: 10px; }
-        .color-customizer label { font-size: 0.9em; display: flex; align-items: center; gap: 5px; }
-        .color-customizer input[type="color"] { width: 25px; height: 25px; border: none; padding: 0; background: none; cursor: pointer; }
+        
+        .sidebar-top-customizer { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid #495057; }
+        .sidebar-top-customizer label { font-size: 0.8em; display: flex; align-items: center; gap: 4px; font-weight: 600; }
+        .sidebar-top-customizer input[type="color"] { width: 20px; height: 20px; border: 1px solid #6c757d; padding: 0; background: none; cursor: pointer; }
 
         #sidebar-product-list { flex-grow: 1; overflow-y: auto; }
         .sidebar-product-item { padding: 12px 15px; border-bottom: 1px solid #495057; cursor: pointer; transition: background-color 0.2s; user-select: none; }
@@ -57,34 +73,13 @@
         .sidebar-product-item span { color: var(--sidebar-text-muted); font-size: 0.9em; margin-right: 8px; }
 
         .resizer { width: 5px; background: var(--resizer-bg); cursor: col-resize; height: 100%; flex-shrink: 0; }
-
         .order-entry-column, .current-order-column { flex-grow: 1; padding: 20px 30px; overflow-y: auto; min-width: 250px; display: flex; flex-direction: column;}
         h2 { color: #0056b3; }
         
-        /* NEW: Container for column headers like "Current Order" and the date picker */
-        .column-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #e9ecef;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            flex-shrink: 0;
-        }
-        .column-header h2 {
-            margin: 0;
-            padding: 0;
-            border: none;
-        }
-        #order-date-picker {
-            padding: 5px 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 0.9em;
-            background-color: #fff;
-        }
+        .column-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-bottom: 20px; flex-shrink: 0; }
+        .column-header h2 { margin: 0; padding: 0; border: none; }
+        #order-date-picker { padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; background-color: #fff; }
         #current-order-container { flex-grow: 1; overflow-y: auto; }
-
 
         button { padding: 10px 20px; border: none; border-radius: 5px; font-size: 1em; font-weight: bold; cursor: pointer; transition: all 0.2s; color: #fff; }
         .btn-primary { background-color: #007bff; } .btn-primary:hover { background-color: #0069d9; }
@@ -94,36 +89,24 @@
         .btn-edit { background-color: #ffc107; color: #212529; } .btn-edit:hover { background-color: #e0a800; }
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background-color: #fefefe; padding: 30px; border: 1px solid #888; width: 80%; max-width: 800px; border-radius: 10px; }
-        .modal-close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        #product-management-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
-        #product-management-form input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em; flex: 1; min-width: 200px; }
-        #product-list-table { width: 100%; border-collapse: collapse; }
-        #product-list-table th, #product-list-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-
+        .modal-content { background-color: #fefefe; padding: 30px; border: 1px solid #888; width: 80%; max-width: 800px; border-radius: 10px; display: flex; flex-direction: column; }
+        .modal-close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; align-self: flex-end; }
+        
         .order-block { border: 1px solid #ccc; border-radius: 8px; overflow: hidden; margin-top: 5px; }
         .order-block table { width: 100%; border-collapse: collapse; }
         .order-block th, .order-block td { border: 1px solid #ddd; padding: 0; text-align: center; }
         .order-block input { width: 100%; height: 100%; border: none; padding: 7px 10px; box-sizing: border-box; text-align: center; font-size: 1em; }
         .product-header { background-color: var(--header-bg); color: var(--header-text); font-size: 1.2em; font-weight: bold; padding: 12px; }
-        .qty-header { background-color: #e9e7fd; }
-        .pcs-header { background-color: #d1e7dd; }
+
+        /* FIXED: Restored styles for input fields */
         .qty-input { color: var(--qty-text-color); font-weight: var(--qty-font-weight); }
         .pcs-input { color: var(--pcs-text-color); font-weight: var(--pcs-font-weight); }
 
         #current-order-container table { width: 100%; border-collapse: collapse; margin-top: 5px; }
         #current-order-container th, #current-order-container td { border: 1px solid #ddd; padding: 6px 12px; text-align: left; }
-        
+        .item-text { color: var(--item-text-color); font-weight: var(--item-font-weight); }
         .qty-text { color: var(--qty-text-color); font-weight: var(--qty-font-weight); }
         .pcs-text { color: var(--pcs-text-color); font-weight: var(--pcs-font-weight); }
-
-        .customization-controls label { font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .customization-controls input[type="color"] { width: 30px; height: 30px; border: 1px solid #ccc; padding: 2px; background: none; cursor: pointer; }
-        .font-size-control button {
-            font-size: 1.2em; line-height: 1; padding: 5px 12px; background-color: #343a40; color: #fff; border: 1px solid #6c757d;
-        }
-        .font-size-control button:hover { background-color: #495057; }
-        .font-size-control span { margin: 0 10px; font-weight: bold; }
 
         @media (max-width: 900px) {
             body { height: auto; }
@@ -131,15 +114,15 @@
             .sidebar, .order-entry-column, .current-order-column { width: 100% !important; max-width: 100%; height: 50vh; min-width: 100%; }
             .resizer { display: none; }
             .top-toolbar { flex-direction: column; align-items: flex-start; }
+            .toolbar-actions { margin-left: 0; margin-top: 10px; }
         }
     </style>
 </head>
 <body>
 
-<!-- Modal for Product Management -->
 <div id="product-management-modal" class="modal">
     <div class="modal-content">
-        <span class="modal-close">&times;</span>
+        <span class="modal-close" id="product-modal-close">&times;</span>
         <h2>Product Management</h2>
         <form id="product-management-form">
             <input type="text" id="product-code-input" placeholder="Code" required>
@@ -155,38 +138,70 @@
         </div>
     </div>
 </div>
+<div id="history-modal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" id="history-modal-close">&times;</span>
+        <h2>Order History</h2>
+        <div id="history-list-container"></div>
+        <div id="history-details-container"></div>
+    </div>
+</div>
 
-<!-- Top Toolbar -->
 <div class="top-toolbar">
     <div class="toolbar-section">
         <button id="open-product-modal-btn" class="btn-secondary">Manage Products</button>
+        <button id="manage-history-btn" class="btn-secondary">Manage History</button>
+    </div>
+    <div class="toolbar-section">
+        <button id="appearance-settings-btn" class="btn-secondary">Appearance Settings</button>
+        <div id="appearance-popover" class="popover">
+            <div class="popover-section">
+                <label>Header BG: <input type="color" id="header-bg-picker"></label>
+                <label>Header Text: <input type="color" id="header-text-picker"></label>
+            </div>
+            <div class="popover-section">
+                <label class="font-size-control">
+                    Font Size:
+                    <button id="decrease-font-btn" class="btn-secondary">-</button>
+                    <span id="font-size-display">16px</span>
+                    <button id="increase-font-btn" class="btn-secondary">+</button>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="toolbar-section">
+         <button id="entry-text-settings-btn" class="btn-secondary">Entry Text Settings</button>
+         <div id="entry-text-popover" class="popover">
+            <div class="popover-section">
+                <label>Item Color: <input type="color" id="item-color-picker"></label>
+                <label><input type="checkbox" id="item-bold-toggle"> Bold</label>
+            </div>
+            <div class="popover-section">
+                <label>Qty Color: <input type="color" id="qty-color-picker"></label>
+                <label><input type="checkbox" id="qty-bold-toggle"> Bold</label>
+            </div>
+            <div class="popover-section">
+                <label>Pcs Color: <input type="color" id="pcs-color-picker"></label>
+                <label><input type="checkbox" id="pcs-bold-toggle"> Bold</label>
+            </div>
+        </div>
+    </div>
+    <div class="toolbar-actions">
+        <button id="email-order-btn" class="btn-primary">Email Order</button>
         <button id="export-excel-btn" class="btn-success">Export to Excel</button>
         <button id="clear-all-btn" class="btn-danger">Clear Order</button>
-    </div>
-    <div class="toolbar-section customization-controls">
-        <h2>Appearance:</h2>
-        <label>Header BG: <input type="color" id="header-bg-picker"></label>
-        <label>Header Text: <input type="color" id="header-text-picker"></label>
-        <label class="font-size-control">
-            Font Size:
-            <button id="decrease-font-btn">-</button>
-            <span id="font-size-display">16px</span>
-            <button id="increase-font-btn">+</button>
-        </label>
-    </div>
-    <div class="toolbar-section customization-controls">
-         <h2>Entry Text:</h2>
-         <label>Qty Color: <input type="color" id="qty-color-picker"></label>
-         <label><input type="checkbox" id="qty-bold-toggle"> Bold</label>
-         <label>Pcs Color: <input type="color" id="pcs-color-picker"></label>
-         <label><input type="checkbox" id="pcs-bold-toggle"> Bold</label>
     </div>
 </div>
 
 <div class="main-layout">
-    <!-- Left Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
+            <div class="sidebar-top-customizer">
+                <label>List BG: <input type="color" id="bg-color-picker"></label>
+                <label>List Text: <input type="color" id="text-color-picker"></label>
+                <label>Header BG: <input type="color" id="sidebar-header-bg-picker"></label>
+                <label>Header Text: <input type="color" id="sidebar-header-text-picker"></label>
+            </div>
             <h2>Product List</h2>
             <div class="sidebar-controls">
                 <input type="text" id="search-input" placeholder="Search by name or code...">
@@ -195,10 +210,6 @@
                     <option value="code-asc">Sort by CODE (A-Z)</option>
                     <option value="item-asc">Sort by ITEM (A-Z)</option>
                 </select>
-                <div class="color-customizer">
-                    <label>BG: <input type="color" id="bg-color-picker"></label>
-                    <label>Text: <input type="color" id="text-color-picker"></label>
-                </div>
             </div>
         </div>
         <div id="sidebar-product-list"></div>
@@ -206,23 +217,16 @@
     
     <div class="resizer" id="drag-handle-1"></div>
 
-    <!-- Middle Column: Order Entry -->
     <div class="order-entry-column">
-        <div class="column-header">
-            <h2 id="order-entry-title">Order Entry</h2>
-        </div>
-        <div id="input-block-container">
-            <p><i>Please select a product from the list on the left to begin.</i></p>
-        </div>
+        <div class="column-header"><h2>Order Entry</h2></div>
+        <div id="input-block-container"><p><i>Please select a product from the list on the left to begin.</i></p></div>
     </div>
 
     <div class="resizer" id="drag-handle-2"></div>
 
-    <!-- Right Column: Current Order -->
     <div class="current-order-column">
-        <!-- UPDATED: Header now includes the date picker -->
         <div class="column-header">
-            <h2 id="current-order-title">Current Order</h2>
+            <h2>Current Order</h2>
             <input type="date" id="order-date-picker">
         </div>
         <div id="current-order-container"></div>
@@ -233,348 +237,134 @@
 // --- STATE & DOM ELEMENTS ---
 let products = [];
 let currentOrder = [];
-const sidebar = document.getElementById('sidebar');
-const orderEntryColumn = document.querySelector('.order-entry-column');
 const productModal = document.getElementById('product-management-modal');
 const productForm = document.getElementById('product-management-form');
-const productCodeInput = document.getElementById('product-code-input');
-const productItemInput = document.getElementById('product-item-input');
-const cancelEditBtn = document.getElementById('cancel-edit-btn');
-const productListTableBody = document.querySelector('#product-list-table tbody');
 const sidebarProductList = document.getElementById('sidebar-product-list');
 const inputBlockContainer = document.getElementById('input-block-container');
 const currentOrderContainer = document.getElementById('current-order-container');
-const exportExcelBtn = document.getElementById('export-excel-btn');
-const clearAllBtn = document.getElementById('clear-all-btn');
 const searchInput = document.getElementById('search-input');
 const sortSelect = document.getElementById('sort-select');
 const bgColorPicker = document.getElementById('bg-color-picker');
 const textColorPicker = document.getElementById('text-color-picker');
 const headerBgPicker = document.getElementById('header-bg-picker');
 const headerTextPicker = document.getElementById('header-text-picker');
+const sidebarHeaderBgPicker = document.getElementById('sidebar-header-bg-picker');
+const sidebarHeaderTextPicker = document.getElementById('sidebar-header-text-picker');
 const decreaseFontBtn = document.getElementById('decrease-font-btn');
 const increaseFontBtn = document.getElementById('increase-font-btn');
-const fontSizeDisplay = document.getElementById('font-size-display');
-const currentOrderTitle = document.getElementById('current-order-title');
-
+const itemColorPicker = document.getElementById('item-color-picker');
+const itemBoldToggle = document.getElementById('item-bold-toggle');
 const qtyColorPicker = document.getElementById('qty-color-picker');
 const qtyBoldToggle = document.getElementById('qty-bold-toggle');
 const pcsColorPicker = document.getElementById('pcs-color-picker');
 const pcsBoldToggle = document.getElementById('pcs-bold-toggle');
-
+const exportExcelBtn = document.getElementById('export-excel-btn');
+const emailOrderBtn = document.getElementById('email-order-btn');
+const clearAllBtn = document.getElementById('clear-all-btn');
+const manageHistoryBtn = document.getElementById('manage-history-btn');
+const appearanceBtn = document.getElementById('appearance-settings-btn');
+const entryTextBtn = document.getElementById('entry-text-settings-btn');
+const appearancePopover = document.getElementById('appearance-popover');
+const entryTextPopover = document.getElementById('entry-text-popover');
 
 // --- PRODUCT MANAGEMENT ---
 function saveProducts() { localStorage.setItem('orderProductsV6', JSON.stringify(products)); }
-function loadProducts() {
-    const stored = localStorage.getItem('orderProductsV6');
-    products = stored ? JSON.parse(stored) : [
-        {"code":"81007","item":"BANNOCKBURN F/RANGE RANDOM (Each)"}, {"code":"50049","item":"BF S/OFF 250-300GR"},
-        {"code":"50602","item":"BF S/OFF 250GR (BUTTERFLIED)"}, {"code":"50035","item":"BF S/OFF 300-350GR"},
-        {"code":"53002","item":"BF S/OFF DICE (20C)"}, {"code":"55000","item":"BF S/OFF STRIP (THIN)"},
-        {"code":"50001","item":"BF S/OFF UNDER 200GR"}, {"code":"51041","item":"BF S/ON 250-300GR"},
-        {"code":"51035","item":"BF S/ON 300-350GR"}, {"code":"51603","item":"BF S/ON MED (NO T/L)"},
-        {"code":"51001","item":"BF S/ON UNDER 200GR"}, {"code":"22002","item":"CHICKEN SUP. MED"},
-        {"code":"32000","item":"CHICKEN DRUMETTES"}, {"code":"87004","item":"CHICKEN DRUMSTICKS LGE"},
-        {"code":"95000","item":"CHICKEN FEET FRESH (20KG/BOX) (Box)"}, {"code":"96200","item":"CHICKEN FRAME ONLY (Box)"},
-        {"code":"92000","item":"CHICKEN GIBLETS (Box)"}, {"code":"91000","item":"CHICKEN LIVER (Box)"},
-        {"code":"20002","item":"CHICKEN M/LAND MED/ BONE IN"}, {"code":"94000","item":"CHICKEN NECK (Box)"},
-        {"code":"42100","item":"CHICKEN RIBS - SKIN ON"}, {"code":"42000","item":"CHICKEN RIBS S/OFF"},
-        {"code":"11536","item":"CHICKEN SCHNITZEL H/CUT LARGE (GT) (Box)"}, {"code":"100777","item":"CHICKEN SKINS"},
-        {"code":"41000","item":"CHICKEN TENDERLOIN"}, {"code":"31000","item":"CHICKEN WGETTES"},
-        {"code":"30004","item":"CHICKEN WING LGE"}, {"code":"34000","item":"CHICKEN WINGS XL NO-TIP"},
-        {"code":"43100","item":"CHOPS -SKIN ON"}, {"code":"44149","item":"KIEV CUT S/ON 250-300GR (POLISHED)"},
-        {"code":"60004","item":"MF S/OFF - LGE"}, {"code":"65000","item":"MF S/OFF - STRIP (THIN)"},
-        {"code":"61004","item":"MF S/ON - LGE"}, {"code":"70004","item":"TF S/OFF - LGE"},
-        {"code":"12012","item":"W/CHICKEN - 12 (DEBONED - WG ON) (Each)"}, {"code":"12014","item":"W/CHICKEN - 14 (DEBONED - WG ON) (Each)"},
-        {"code":"12016","item":"W/CHICKEN - 16 (DEBONED - WG ON) (Each)"}, {"code":"12018","item":"W/CHICKEN - 18 (DEBONED - WG ON) (Each)"},
-        {"code":"12020","item":"W/CHICKEN - 20 (DEBONED - WG ON) (Each)"}, {"code":"10110","item":"WHOLE CHICKEN - SIZE 10 (Each)"},
-        {"code":"10112","item":"WHOLE CHICKEN - SIZE 12 (Each)"}, {"code":"10114","item":"WHOLE CHICKEN - SIZE 14 (Each)"},
-        {"code":"10116","item":"WHOLE CHICKEN - SIZE 16 (Each)"}, {"code":"10118","item":"WHOLE CHICKEN - SIZE 18 (Each)"},
-        {"code":"10120","item":"WHOLE CHICKEN - SIZE 20 (Each)"}
-    ];
-}
-function renderProductLists() {
-    handleSort();
-    const searchTerm = searchInput.value.toLowerCase();
-    productListTableBody.innerHTML = '';
-    sidebarProductList.innerHTML = '';
-    const filteredProducts = products.filter(p => p.code.toLowerCase().includes(searchTerm) || p.item.toLowerCase().includes(searchTerm));
-    filteredProducts.forEach(p => {
-        productListTableBody.innerHTML += `<tr><td>${p.code}</td><td>${p.item}</td><td style="display:flex; gap: 5px;"><button class="btn-edit" data-code="${p.code}" style="padding: 5px 10px; font-size: 0.8em;">Edit</button><button class="btn-danger" data-code="${p.code}" style="padding: 5px 10px; font-size: 0.8em;">Delete</button></td></tr>`;
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'sidebar-product-item';
-        itemDiv.dataset.code = p.code;
-        itemDiv.draggable = true;
-        itemDiv.innerHTML = `<span>${p.code}</span>${p.item}`;
-        sidebarProductList.appendChild(itemDiv);
-    });
-}
-function resetProductForm() { productForm.reset(); productCodeInput.readOnly = false; cancelEditBtn.style.display = 'none'; }
-function handleProductFormSubmit(e) { e.preventDefault(); const code = productCodeInput.value.trim(); const item = productItemInput.value.trim(); if (!code || !item) return; const existing = products.find(p => p.code === code); if (existing) existing.item = item; else products.push({ code, item }); saveProducts(); renderProductLists(); resetProductForm(); }
-function handleProductActions(e) { const target = e.target; const code = target.dataset.code; if (target.classList.contains('btn-danger')) { if (confirm(`Delete product with code ${code}?`)) { products = products.filter(p => p.code !== code); saveProducts(); renderProductLists(); } } else if (target.classList.contains('btn-edit')) { const product = products.find(p => p.code === code); productCodeInput.value = product.code; productItemInput.value = product.item; productCodeInput.readOnly = true; cancelEditBtn.style.display = 'inline-block'; } }
+function loadProducts() { const stored = localStorage.getItem('orderProductsV6'); products = stored ? JSON.parse(stored) : [{"code":"81007","item":"BANNOCKBURN F/RANGE RANDOM (Each)"},{"code":"50049","item":"BF S/OFF 250-300GR"},{"code":"50602","item":"BF S/OFF 250GR (BUTTERFLIED)"},{"code":"50035","item":"BF S/OFF 300-350GR"},{"code":"53002","item":"BF S/OFF DICE (20C)"},{"code":"55000","item":"BF S/OFF STRIP (THIN)"},{"code":"50001","item":"BF S/OFF UNDER 200GR"},{"code":"51041","item":"BF S/ON 250-300GR"},{"code":"51035","item":"BF S/ON 300-350GR"},{"code":"51603","item":"BF S/ON MED (NO T/L)"},{"code":"51001","item":"BF S/ON UNDER 200GR"},{"code":"22002","item":"CHICKEN SUP. MED"},{"code":"32000","item":"CHICKEN DRUMETTES"},{"code":"87004","item":"CHICKEN DRUMSTICKS LGE"},{"code":"95000","item":"CHICKEN FEET FRESH (20KG/BOX) (Box)"},{"code":"96200","item":"CHICKEN FRAME ONLY (Box)"},{"code":"92000","item":"CHICKEN GIBLETS (Box)"},{"code":"91000","item":"CHICKEN LIVER (Box)"},{"code":"20002","item":"CHICKEN M/LAND MED/ BONE IN"},{"code":"94000","item":"CHICKEN NECK (Box)"},{"code":"42100","item":"CHICKEN RIBS - SKIN ON"},{"code":"42000","item":"CHICKEN RIBS S/OFF"},{"code":"11536","item":"CHICKEN SCHNITZEL H/CUT LARGE (GT) (Box)"},{"code":"100777","item":"CHICKEN SKINS"},{"code":"41000","item":"CHICKEN TENDERLOIN"},{"code":"31000","item":"CHICKEN WGETTES"},{"code":"30004","item":"CHICKEN WING LGE"},{"code":"34000","item":"CHICKEN WINGS XL NO-TIP"},{"code":"43100","item":"CHOPS -SKIN ON"},{"code":"44149","item":"KIEV CUT S/ON 250-300GR (POLISHED)"},{"code":"60004","item":"MF S/OFF - LGE"},{"code":"65000","item":"MF S/OFF - STRIP (THIN)"},{"code":"61004","item":"MF S/ON - LGE"},{"code":"70004","item":"TF S/OFF - LGE"},{"code":"12012","item":"W/CHICKEN - 12 (DEBONED - WG ON) (Each)"},{"code":"12014","item":"W/CHICKEN - 14 (DEBONED - WG ON) (Each)"},{"code":"12016","item":"W/CHICKEN - 16 (DEBONED - WG ON) (Each)"},{"code":"12018","item":"W/CHICKEN - 18 (DEBONED - WG ON) (Each)"},{"code":"12020","item":"W/CHICKEN - 20 (DEBONED - WG ON) (Each)"},{"code":"10110","item":"WHOLE CHICKEN - SIZE 10 (Each)"},{"code":"10112","item":"WHOLE CHICKEN - SIZE 12 (Each)"},{"code":"10114","item":"WHOLE CHICKEN - SIZE 14 (Each)"},{"code":"10116","item":"WHOLE CHICKEN - SIZE 16 (Each)"},{"code":"10118","item":"WHOLE CHICKEN - SIZE 18 (Each)"},{"code":"10120","item":"WHOLE CHICKEN - SIZE 20 (Each)"}]; }
+function renderProductLists() { handleSort(); const term = searchInput.value.toLowerCase(); const tableBody = document.querySelector('#product-list-table tbody'); tableBody.innerHTML = ''; sidebarProductList.innerHTML = ''; const filtered = products.filter(p => p.code.toLowerCase().includes(term) || p.item.toLowerCase().includes(term)); filtered.forEach(p => { tableBody.innerHTML += `<tr><td>${p.code}</td><td>${p.item}</td><td style="display:flex;gap:5px;"><button class="btn-edit" data-code="${p.code}" style="padding:5px 10px;font-size:0.8em;">Edit</button><button class="btn-danger" data-code="${p.code}" style="padding:5px 10px;font-size:0.8em;">Delete</button></td></tr>`; const div = document.createElement('div'); div.className = 'sidebar-product-item'; div.dataset.code = p.code; div.draggable = true; div.innerHTML = `<span>${p.code}</span>${p.item}`; sidebarProductList.appendChild(div); }); }
+function resetProductForm() { productForm.reset(); document.getElementById('product-code-input').readOnly = false; document.getElementById('cancel-edit-btn').style.display = 'none'; }
+function handleProductFormSubmit(e) { e.preventDefault(); const code = document.getElementById('product-code-input').value.trim(); const item = document.getElementById('product-item-input').value.trim(); if (!code || !item) return; const existing = products.find(p => p.code === code); if (existing) { existing.item = item; } else { products.push({ code, item }); } saveProducts(); renderProductLists(); resetProductForm(); }
+function handleProductActions(e) { const target = e.target; const code = target.dataset.code; if (!code) return; if (target.classList.contains('btn-danger')) { if (confirm(`Delete product with code ${code}?`)) { products = products.filter(p => p.code !== code); saveProducts(); renderProductLists(); } } else if (target.classList.contains('btn-edit')) { const product = products.find(p => p.code === code); document.getElementById('product-code-input').value = product.code; document.getElementById('product-item-input').value = product.item; document.getElementById('product-code-input').readOnly = true; document.getElementById('cancel-edit-btn').style.display = 'inline-block'; } }
 
 // --- UI CUSTOMIZATION ---
-function handleSort() { const sortBy = sortSelect.value; if (sortBy === 'custom') return; products.sort((a, b) => { if (sortBy === 'code-asc') return a.code.localeCompare(b.code, undefined, { numeric: true }); if (sortBy === 'item-asc') return a.item.localeCompare(b.item); }); }
-function handleSidebarColorChange() { const bgColor = bgColorPicker.value; const textColor = textColorPicker.value; document.documentElement.style.setProperty('--sidebar-bg', bgColor); document.documentElement.style.setProperty('--sidebar-text', textColor); localStorage.setItem('sidebarColors', JSON.stringify({ bg: bgColor, text: textColor })); }
-function loadSidebarColors() { const stored = JSON.parse(localStorage.getItem('sidebarColors')); if (stored) { bgColorPicker.value = stored.bg; textColorPicker.value = stored.text; } else { bgColorPicker.value = '#343a40'; textColorPicker.value = '#f8f9fa'; } handleSidebarColorChange(); }
-function handleHeaderColorChange() { const bgColor = headerBgPicker.value; const textColor = headerTextPicker.value; document.documentElement.style.setProperty('--header-bg', bgColor); document.documentElement.style.setProperty('--header-text', textColor); localStorage.setItem('headerColors', JSON.stringify({ bg: bgColor, text: textColor })); }
-function loadHeaderColors() { const stored = JSON.parse(localStorage.getItem('headerColors')); if (stored) { headerBgPicker.value = stored.bg; headerTextPicker.value = stored.text; } else { headerBgPicker.value = '#ffc107'; headerTextPicker.value = '#212529'; } handleHeaderColorChange(); }
-function handleFontSizeChange(amount) { let currentSize = parseFloat(getComputedStyle(document.body).fontSize); currentSize += amount; if (currentSize < 12 || currentSize > 24) return; document.documentElement.style.setProperty('--base-font-size', `${currentSize}px`); fontSizeDisplay.textContent = `${currentSize}px`; localStorage.setItem('fontSize', currentSize); }
-function loadFontSize() { const storedSize = localStorage.getItem('fontSize'); const size = storedSize ? parseFloat(storedSize) : 16; document.documentElement.style.setProperty('--base-font-size', `${size}px`); fontSizeDisplay.textContent = `${size}px`; }
-
-function handleEntryStyleChange() {
-    const qtyColor = qtyColorPicker.value;
-    const pcsColor = pcsColorPicker.value;
-    const qtyWeight = qtyBoldToggle.checked ? 'bold' : 'normal';
-    const pcsWeight = pcsBoldToggle.checked ? 'bold' : 'normal';
-    document.documentElement.style.setProperty('--qty-text-color', qtyColor);
-    document.documentElement.style.setProperty('--pcs-text-color', pcsColor);
-    document.documentElement.style.setProperty('--qty-font-weight', qtyWeight);
-    document.documentElement.style.setProperty('--pcs-font-weight', pcsWeight);
-    localStorage.setItem('entryStyles', JSON.stringify({ qtyColor, pcsColor, qtyWeight, pcsWeight }));
-}
-function loadEntryStyles() {
-    const stored = JSON.parse(localStorage.getItem('entryStyles'));
-    const defaults = { qtyColor: '#dc3545', pcsColor: '#0056b3', qtyWeight: 'bold', pcsWeight: 'bold' };
-    const styles = stored ? { ...defaults, ...stored } : defaults;
-    qtyColorPicker.value = styles.qtyColor;
-    pcsColorPicker.value = styles.pcsColor;
-    qtyBoldToggle.checked = styles.qtyWeight === 'bold';
-    pcsBoldToggle.checked = styles.pcsWeight === 'bold';
-    handleEntryStyleChange();
-}
+function handleSort() { const sortBy = sortSelect.value; if (sortBy === 'custom') return; products.sort((a, b) => { if (sortBy === 'code-asc') return a.code.localeCompare(b.code, undefined, { numeric: true }); if (sortBy === 'item-asc') return a.item.localeCompare(b.item); return 0;}); }
+function handleSidebarColorChange() { document.documentElement.style.setProperty('--sidebar-bg', bgColorPicker.value); document.documentElement.style.setProperty('--sidebar-text', textColorPicker.value); localStorage.setItem('sidebarColors', JSON.stringify({ bg: bgColorPicker.value, text: textColorPicker.value })); }
+function loadSidebarColors() { const stored = JSON.parse(localStorage.getItem('sidebarColors')); bgColorPicker.value = stored ? stored.bg : '#343a40'; textColorPicker.value = stored ? stored.text : '#f8f9fa'; handleSidebarColorChange(); }
+function handleSidebarHeaderColorChange() { document.documentElement.style.setProperty('--sidebar-header-bg', sidebarHeaderBgPicker.value); document.documentElement.style.setProperty('--sidebar-header-text', sidebarHeaderTextPicker.value); localStorage.setItem('sidebarHeaderColors', JSON.stringify({ bg: sidebarHeaderBgPicker.value, text: sidebarHeaderTextPicker.value })); }
+function loadSidebarHeaderColors() { const stored = JSON.parse(localStorage.getItem('sidebarHeaderColors')); sidebarHeaderBgPicker.value = stored ? stored.bg : '#212529'; sidebarHeaderTextPicker.value = stored ? stored.text : '#f8f9fa'; handleSidebarHeaderColorChange(); }
+function handleHeaderColorChange() { document.documentElement.style.setProperty('--header-bg', headerBgPicker.value); document.documentElement.style.setProperty('--header-text', headerTextPicker.value); localStorage.setItem('headerColors', JSON.stringify({ bg: headerBgPicker.value, text: headerTextPicker.value })); }
+function loadHeaderColors() { const stored = JSON.parse(localStorage.getItem('headerColors')); headerBgPicker.value = stored ? stored.bg : '#ffc107'; headerTextPicker.value = stored ? stored.text : '#212529'; handleHeaderColorChange(); }
+function handleFontSizeChange(amount) { let size = parseFloat(getComputedStyle(document.body).fontSize); size += amount; if (size < 12 || size > 24) return; document.documentElement.style.setProperty('--base-font-size', `${size}px`); document.getElementById('font-size-display').textContent = `${size}px`; localStorage.setItem('fontSize', size); }
+function loadFontSize() { const size = localStorage.getItem('fontSize') || 16; document.documentElement.style.setProperty('--base-font-size', `${size}px`); document.getElementById('font-size-display').textContent = `${size}px`; }
+function handleEntryStyleChange() { const styles = { itemColor: itemColorPicker.value, itemWeight: itemBoldToggle.checked?'bold':'normal', qtyColor: qtyColorPicker.value, pcsColor: pcsColorPicker.value, qtyWeight: qtyBoldToggle.checked?'bold':'normal', pcsWeight: pcsBoldToggle.checked?'bold':'normal' }; document.documentElement.style.setProperty('--item-text-color', styles.itemColor); document.documentElement.style.setProperty('--item-font-weight', styles.itemWeight); document.documentElement.style.setProperty('--qty-text-color', styles.qtyColor); document.documentElement.style.setProperty('--pcs-text-color', styles.pcsColor); document.documentElement.style.setProperty('--qty-font-weight', styles.qtyWeight); document.documentElement.style.setProperty('--pcs-font-weight', styles.pcsWeight); localStorage.setItem('entryStyles', JSON.stringify(styles)); renderCurrentOrderTable(); }
+function loadEntryStyles() { const defaults = { itemColor: '#212529', itemWeight: 'normal', qtyColor: '#dc3545', pcsColor: '#0056b3', qtyWeight: 'bold', pcsWeight: 'bold' }; const stored = JSON.parse(localStorage.getItem('entryStyles')); const styles = stored ? { ...defaults, ...stored } : defaults; itemColorPicker.value = styles.itemColor; itemBoldToggle.checked = styles.itemWeight === 'bold'; qtyColorPicker.value = styles.qtyColor; pcsColorPicker.value = styles.pcsColor; qtyBoldToggle.checked = styles.qtyWeight === 'bold'; pcsBoldToggle.checked = styles.pcsWeight === 'bold'; handleEntryStyleChange(); }
 
 // --- ORDER ENTRY & DYNAMIC UPDATE ---
-// MODIFIED: Added Notes column to the order entry block
-function displayInputBlock(code) {
-    const product = products.find(p => p.code === code);
-    if (!product) return;
-    let tableRows = '';
-    const existingProduct = currentOrder.find(p => p.code === code);
-    const qtyValues = existingProduct ? existingProduct.entries.filter(e => e.type === 'qty').map(e => e.value) : [];
-    const pcsValues = existingProduct ? existingProduct.entries.filter(e => e.type === 'pcs').map(e => e.value) : [];
-    const noteValues = existingProduct ? existingProduct.entries.filter(e => e.type === 'note').map(e => e.value) : []; // Get existing notes
-    const rowCount = Math.max(8, qtyValues.length, pcsValues.length, noteValues.length) + 1;
-    for(let i=0; i < rowCount; i++){
-        tableRows += `<tr>
-                        <td><input type="text" class="qty-input" value="${qtyValues[i] || ''}"></td>
-                        <td><input type="text" class="pcs-input" value="${pcsValues[i] || ''}"></td>
-                        <td><input type="text" class="note-input" value="${noteValues[i] || ''}"></td>
-                      </tr>`;
-    }
-    inputBlockContainer.innerHTML = `<div class="order-block" data-code="${product.code}" data-item="${product.item}">
-                                        <div class="product-header">${product.code} - ${product.item}</div>
-                                        <table>
-                                            <thead><tr><th class="qty-header">Qty</th><th class="pcs-header">Qty (pcs/each)</th><th>Notes</th></tr></thead>
-                                            <tbody>${tableRows}</tbody>
-                                        </table>
-                                     </div>`;
-    document.querySelectorAll('.sidebar-product-item').forEach(item => item.classList.remove('active'));
-    document.querySelector(`.sidebar-product-item[data-code="${code}"]`)?.classList.add('active');
-}
+function displayInputBlock(code) { const product = products.find(p => p.code === code); if (!product) return; const existing = currentOrder.find(p => p.code === code); const qtys = existing ? existing.entries.filter(e => e.type === 'qty').map(e => e.value) : []; const pcs = existing ? existing.entries.filter(e => e.type === 'pcs').map(e => e.value) : []; const notes = existing ? existing.entries.filter(e => e.type === 'note').map(e => e.value) : []; const rows = Math.max(8, qtys.length, pcs.length, notes.length) + 1; let tableRows = ''; for(let i=0; i<rows; i++){ tableRows += `<tr><td><input type="number" class="qty-input" value="${qtys[i]||''}"></td><td><input type="number" class="pcs-input" value="${pcs[i]||''}"></td><td><input type="text" class="note-input" value="${notes[i]||''}"></td></tr>`; } inputBlockContainer.innerHTML = `<div class="order-block" data-code="${product.code}" data-item="${product.item}"><div class="product-header">${product.code} - ${product.item}</div><table><thead><tr><th>Qty</th><th>Qty (pcs/each)</th><th>Notes</th></tr></thead><tbody>${tableRows}</tbody></table></div>`; document.querySelectorAll('.sidebar-product-item.active').forEach(i => i.classList.remove('active')); document.querySelector(`.sidebar-product-item[data-code="${code}"]`)?.classList.add('active'); }
+function syncOrderFromInputBlock() { const block = document.querySelector('.order-block'); if (!block) return; const { code, item } = block.dataset; const entries = []; block.querySelectorAll('tbody tr').forEach(row => { const qty = row.querySelector('.qty-input').value.trim(); const pcs = row.querySelector('.pcs-input').value.trim(); const note = row.querySelector('.note-input').value.trim(); if (qty) entries.push({ type: 'qty', value: qty }); if (pcs) entries.push({ type: 'pcs', value: pcs }); if (note) entries.push({ type: 'note', value: note }); }); const idx = currentOrder.findIndex(p => p.code === code); if (entries.length > 0) { if (idx > -1) currentOrder[idx].entries = entries; else currentOrder.push({ code, item, entries }); } else if (idx > -1) { currentOrder.splice(idx, 1); } renderCurrentOrderTable(); }
+function addEntryRowIfNeeded(e) { if (!e.target.matches('.qty-input, .pcs-input, .note-input')) return; const row = e.target.closest('tr'); if (row && row === row.parentElement.lastElementChild) { const newRow = row.parentElement.insertRow(); newRow.innerHTML = `<td><input type="number" class="qty-input"></td><td><input type="number" class="pcs-input"></td><td><input type="text" class="note-input"></td>`; } }
+function handleKeyboardNavigation(e) { const inputs = Array.from(document.querySelectorAll('.order-block input')); const idx = inputs.indexOf(e.target); if (idx === -1) return; let nextIdx = -1; switch(e.key) { case 'Enter': case 'ArrowDown': nextIdx = idx + 3; break; case 'ArrowUp': nextIdx = idx - 3; break; case 'ArrowRight': if (!e.target.classList.contains('note-input')) nextIdx = idx + 1; break; case 'ArrowLeft': if (!e.target.classList.contains('qty-input')) nextIdx = idx - 1; break; } if (nextIdx >= 0 && nextIdx < inputs.length) { e.preventDefault(); inputs[nextIdx].focus(); } }
+function renderCurrentOrderTable() { if (currentOrder.length === 0) { currentOrderContainer.innerHTML = '<p>No items in current order.</p>'; return; } let table = '<table><thead><tr><th>CODE</th><th>ITEM</th><th>Qty</th><th>Qty (pcs/each)</th><th>Notes</th></tr></thead><tbody>'; currentOrder.forEach(p => { const qtys = p.entries.filter(e=>e.type==='qty').map(e=>e.value); const pcs = p.entries.filter(e=>e.type==='pcs').map(e=>e.value); const notes = p.entries.filter(e=>e.type==='note').map(e=>e.value); const maxRows = Math.max(qtys.length, pcs.length, notes.length) || 1; for (let i=0; i<maxRows; i++) { table += `<tr>${i===0 ? `<td rowspan="${maxRows}">${p.code}</td><td rowspan="${maxRows}" class="item-text">${p.item}</td>` : ''}<td class="qty-text">${qtys[i]||''}</td><td class="pcs-text">${pcs[i]||''}</td><td>${notes[i]||''}</td></tr>`; } }); currentOrderContainer.innerHTML = table + '</tbody></table>'; }
 
-// MODIFIED: Syncs the new Notes field from the input block
-function syncOrderFromInputBlock() {
-    const block = document.querySelector('.order-block');
-    if (!block) return;
-    const code = block.dataset.code;
-    const item = block.dataset.item;
-    const entries = [];
-    block.querySelectorAll('tbody tr').forEach(row => {
-        const qty = row.querySelector('.qty-input').value.trim();
-        const pcs = row.querySelector('.pcs-input').value.trim();
-        const note = row.querySelector('.note-input').value.trim(); // Get note value
-        if (qty) entries.push({ type: 'qty', value: qty });
-        if (pcs) entries.push({ type: 'pcs', value: pcs });
-        if (note) entries.push({ type: 'note', value: note }); // Add note to entries if it exists
-    });
-    
-    const existingProductIndex = currentOrder.findIndex(p => p.code === code);
-    if (entries.length > 0) {
-        if (existingProductIndex > -1) {
-            currentOrder[existingProductIndex].entries = entries;
-        } else {
-            currentOrder.push({ code, item, entries });
-        }
-    } else {
-        if (existingProductIndex > -1) {
-            currentOrder.splice(existingProductIndex, 1);
-        }
-    }
-    renderCurrentOrderTable();
-}
-
-// MODIFIED: Adds a new row with a Notes input field
-function addEntryRowIfNeeded(e) {
-    if (!e.target.matches('.qty-input, .pcs-input, .note-input')) return; // Added .note-input
-    const currentRow = e.target.closest('tr');
-    if (currentRow && currentRow === currentRow.parentElement.lastElementChild) {
-        const newRow = document.createElement('tr');
-        newRow.innerHTML = `<td><input type="text" class="qty-input"></td>
-                            <td><input type="text" class="pcs-input"></td>
-                            <td><input type="text" class="note-input"></td>`; // Added notes input
-        currentRow.parentElement.appendChild(newRow);
-    }
-}
-
-// MODIFIED: Updated keyboard navigation for the new column
-function handleKeyboardNavigation(e) {
-    const target = e.target;
-    const inputs = Array.from(document.querySelectorAll('.order-block .qty-input, .order-block .pcs-input, .order-block .note-input'));
-    const currentIndex = inputs.indexOf(target);
-    if (currentIndex === -1) return;
-    let nextIndex = -1;
-    switch(e.key) {
-        case 'Enter':
-        case 'ArrowDown':
-            nextIndex = currentIndex + 3; // Jump to the next row
-            break;
-        case 'ArrowUp':
-            nextIndex = currentIndex - 3; // Jump to the previous row
-            break;
-        case 'ArrowRight':
-            if (!target.classList.contains('note-input')) { // Can't go right from notes
-                nextIndex = currentIndex + 1;
-            }
-            break;
-        case 'ArrowLeft':
-            if (!target.classList.contains('qty-input')) { // Can't go left from qty
-                nextIndex = currentIndex - 1;
-            }
-            break;
-    }
-    if (nextIndex >= 0 && nextIndex < inputs.length) {
-        e.preventDefault();
-        inputs[nextIndex].focus();
-    }
-}
-
-// MODIFIED: Renders the Current Order table with the new Notes column
-function renderCurrentOrderTable() {
-    if (currentOrder.length === 0) {
-        currentOrderContainer.innerHTML = '<p>No items in the current order.</p>';
-        return;
-    }
-    let tableHTML = '<table><thead><tr><th>CODE</th><th>ITEM</th><th>Qty</th><th>Qty (pcs/each)</th><th>Notes</th></tr></thead><tbody>'; // Added Notes header
-    currentOrder.forEach(p => {
-        const qtyValues = p.entries.filter(e => e.type === 'qty').map(e => e.value);
-        const pcsValues = p.entries.filter(e => e.type === 'pcs').map(e => e.value);
-        const noteValues = p.entries.filter(e => e.type === 'note').map(e => e.value); // Get note values
-        const maxRows = Math.max(qtyValues.length, pcsValues.length, noteValues.length);
-        for (let i = 0; i < maxRows; i++) {
-            tableHTML += '<tr>';
-            if (i === 0) {
-                tableHTML += `<td rowspan="${maxRows}">${p.code}</td><td rowspan="${maxRows}">${p.item}</td>`;
-            }
-            tableHTML += `<td class="qty-text">${qtyValues[i] || ''}</td>
-                          <td class="pcs-text">${pcsValues[i] || ''}</td>
-                          <td>${noteValues[i] || ''}</td></tr>`; // Added note data cell
-        }
-    });
-    tableHTML += '</tbody></table>';
-    currentOrderContainer.innerHTML = tableHTML;
-}
-
-// --- ACTIONS ---
-// MODIFIED: Excel export now includes the Notes column
-function generateAndDownloadExcel() {
-    if (currentOrder.length === 0) {
-        alert("There are no orders to export.");
-        return;
-    }
-    const data = [['CODE', 'ITEM', 'QTY', 'Qty (pcs/each)', 'NOTES']]; // Added NOTES to header
-    currentOrder.forEach(p => {
-        const qtyValues = p.entries.filter(e => e.type === 'qty').map(e => e.value);
-        const pcsValues = p.entries.filter(e => e.type === 'pcs').map(e => e.value);
-        const noteValues = p.entries.filter(e => e.type === 'note').map(e => e.value); // Get note values for export
-        const maxRows = Math.max(qtyValues.length, pcsValues.length, noteValues.length);
-        for (let i = 0; i < maxRows; i++) {
-            data.push([
-                p.code,
-                p.item,
-                qtyValues[i] || '',
-                pcsValues[i] || '',
-                noteValues[i] || '' // Add note value to the row
-            ]);
-        }
-    });
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "OrderSheet");
-    XLSX.writeFile(wb, `Order_${new Date().toISOString().slice(0, 10)}.xlsx`);
-}
-
-// --- DRAG & DROP SORTING ---
-let draggedItem = null;
-function handleDragAndDrop() {
-    sidebarProductList.addEventListener('dragstart', e => { draggedItem = e.target; setTimeout(() => e.target.classList.add('dragging'), 0); });
-    sidebarProductList.addEventListener('dragend', e => { draggedItem.classList.remove('dragging'); });
-    sidebarProductList.addEventListener('dragover', e => { e.preventDefault(); const afterElement = getDragAfterElement(sidebarProductList, e.clientY); const current = document.querySelector('.dragging'); if (afterElement == null) { sidebarProductList.appendChild(current); } else { sidebarProductList.insertBefore(current, afterElement); } });
-    sidebarProductList.addEventListener('drop', e => { const newOrder = Array.from(sidebarProductList.querySelectorAll('.sidebar-product-item')).map(item => item.dataset.code); products.sort((a, b) => newOrder.indexOf(a.code) - newOrder.indexOf(b.code)); sortSelect.value = 'custom'; saveProducts(); });
-}
-function getDragAfterElement(container, y) { const draggableElements = [...container.querySelectorAll('.sidebar-product-item:not(.dragging)')]; return draggableElements.reduce((closest, child) => { const box = child.getBoundingClientRect(); const offset = y - box.top - box.height / 2; if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; } else { return closest; } }, { offset: Number.NEGATIVE_INFINITY }).element; }
+// --- HISTORY, ACTIONS, DRAG & DROP ---
+function getOrderHistory() { return JSON.parse(localStorage.getItem('orderHistoryV1') || '[]'); }
+function saveOrderHistory(history) { localStorage.setItem('orderHistoryV1', JSON.stringify(history)); }
+function saveOrderToHistory() { if (currentOrder.length === 0) return; const history = getOrderHistory(); history.unshift({ id: Date.now(), date: document.getElementById('order-date-picker').value, savedAt: new Date().toISOString(), order: JSON.parse(JSON.stringify(currentOrder)) }); saveOrderHistory(history); }
+function renderOrderHistory() { const history = getOrderHistory(); const list = document.getElementById('history-list-container'); list.innerHTML = ''; document.getElementById('history-details-container').innerHTML = ''; if (history.length === 0) { list.innerHTML = '<p>No saved orders found.</p>'; return; } history.forEach(entry => { const item = document.createElement('div'); item.className = 'history-item'; item.innerHTML = `<div>Order for: ${entry.date} (Saved: ${new Date(entry.savedAt).toLocaleString()})</div><div><button class="btn-primary btn-view-history" data-id="${entry.id}">View</button> <button class="btn-danger btn-delete-history" data-id="${entry.id}">Delete</button></div>`; list.appendChild(item); }); }
+function handleHistoryActions(e) { const id = e.target.dataset.id; if (!id) return; if (e.target.classList.contains('btn-delete-history')) { if (confirm('Delete this historical order?')) { saveOrderHistory(getOrderHistory().filter(entry => entry.id != id)); renderOrderHistory(); } } else if (e.target.classList.contains('btn-view-history')) { const entry = getOrderHistory().find(item => item.id == id); if (entry) { const originalOrder = currentOrder; currentOrder = entry.order; document.getElementById('history-details-container').innerHTML = '<h4>Order Details</h4>' + currentOrderContainer.innerHTML; currentOrder = originalOrder; } } }
+function generateAndDownloadExcel() { if (currentOrder.length === 0) { alert("No orders to export."); return; } saveOrderToHistory(); const data = [['CODE', 'ITEM', 'QTY', 'Qty (pcs/each)', 'NOTES']]; currentOrder.forEach(p => { const q = p.entries.filter(e => e.type === 'qty'); const pcs = p.entries.filter(e => e.type === 'pcs'); const n = p.entries.filter(e => e.type === 'note'); if (q.length+pcs.length+n.length === 0) data.push([p.code, p.item, '', '', '']); else { q.forEach(e => data.push([p.code, p.item, e.value, '', ''])); pcs.forEach(e => data.push([p.code, p.item, '', e.value, ''])); n.forEach(e => data.push([p.code, p.item, '', '', e.value])); } }); const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "OrderSheet"); XLSX.writeFile(wb, `Order_${document.getElementById('order-date-picker').value || new Date().toISOString().slice(0, 10)}.xlsx`); }
+function handleEmailOrder() { if (currentOrder.length === 0) { alert("Cannot email empty order."); return; } generateAndDownloadExcel(); const subject = encodeURIComponent(`Order for ${document.getElementById('order-date-picker').value}`); const body = encodeURIComponent(`Hello,\n\nPlease find attached order for ${document.getElementById('order-date-picker').value}.\n\nThank you.`); window.location.href = `mailto:?subject=${subject}&body=${body}`; }
+let draggedItem = null; function handleDragAndDrop() { sidebarProductList.addEventListener('dragstart', e => { draggedItem = e.target; setTimeout(() => e.target.classList.add('dragging'), 0); }); sidebarProductList.addEventListener('dragend', () => draggedItem.classList.remove('dragging')); sidebarProductList.addEventListener('dragover', e => { e.preventDefault(); const after = getDragAfterElement(sidebarProductList, e.clientY); if (after == null) sidebarProductList.appendChild(draggedItem); else sidebarProductList.insertBefore(draggedItem, after); }); sidebarProductList.addEventListener('drop', () => { const newOrder = [...sidebarProductList.children].map(i => i.dataset.code); products.sort((a,b) => newOrder.indexOf(a.code) - newOrder.indexOf(b.code)); sortSelect.value = 'custom'; saveProducts(); }); }
+function getDragAfterElement(c, y) { return [...c.querySelectorAll('.sidebar-product-item:not(.dragging)')].reduce((closest, child) => { const box = child.getBoundingClientRect(); const offset = y - box.top - box.height/2; return (offset < 0 && offset > closest.offset) ? { offset, element: child } : closest; }, { offset: Number.NEGATIVE_INFINITY }).element; }
+function initializeResizer(resizer, panel) { resizer.addEventListener('mousedown', function(e) { e.preventDefault(); const startX = e.clientX; const startW = panel.offsetWidth; function onMove(me) { panel.style.width = startW + me.clientX - startX + 'px'; } function onUp() { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); } window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp); }); }
 
 // --- INITIALIZATION ---
 function initialize() {
-    loadProducts(); loadSidebarColors(); loadHeaderColors(); loadFontSize(); loadEntryStyles(); renderProductLists(); renderCurrentOrderTable();
-    
-    // THIS LINE SETS THE DATE TO TODAY. IT RUNS WHEN THE PAGE IS FRESHLY LOADED.
+    loadProducts(); loadSidebarColors(); loadSidebarHeaderColors(); loadHeaderColors(); loadFontSize(); loadEntryStyles(); renderProductLists(); renderCurrentOrderTable();
     document.getElementById('order-date-picker').valueAsDate = new Date();
+    
+    function togglePopover(popover, button) {
+        [appearancePopover, entryTextPopover].forEach(p => { if (p !== popover) p.classList.remove('show'); });
+        popover.classList.toggle('show');
+        if (popover.classList.contains('show')) {
+            const rect = button.getBoundingClientRect();
+            popover.style.top = `${rect.bottom + 5}px`;
+            popover.style.left = `${rect.left}px`;
+        }
+    }
+    
+    appearanceBtn.addEventListener('click', e => { e.stopPropagation(); togglePopover(appearancePopover, appearanceBtn); });
+    entryTextBtn.addEventListener('click', e => { e.stopPropagation(); togglePopover(entryTextPopover, entryTextBtn); });
+    window.addEventListener('click', e => { if (!e.target.closest('.popover, .toolbar-section > button')) { appearancePopover.classList.remove('show'); entryTextPopover.classList.remove('show'); } });
 
     document.getElementById('open-product-modal-btn').onclick = () => productModal.style.display = 'flex';
-    document.querySelector('.modal-close').onclick = () => productModal.style.display = 'none';
-    window.onclick = (e) => { if (e.target == productModal) productModal.style.display = "none"; };
-    cancelEditBtn.onclick = resetProductForm;
+    document.getElementById('product-modal-close').onclick = () => productModal.style.display = 'none';
+    manageHistoryBtn.onclick = () => { renderOrderHistory(); document.getElementById('history-modal').style.display = 'flex'; };
+    document.getElementById('history-modal-close').onclick = () => document.getElementById('history-modal').style.display = 'none';
+    window.addEventListener('click', e => { if (e.target.classList.contains('modal')) e.target.style.display = 'none'; });
+    document.getElementById('cancel-edit-btn').onclick = resetProductForm;
     
     productForm.addEventListener('submit', handleProductFormSubmit);
-    productListTableBody.addEventListener('click', handleProductActions);
-    sidebarProductList.addEventListener('click', (e) => { const item = e.target.closest('.sidebar-product-item'); if (item) displayInputBlock(item.dataset.code); });
+    document.querySelector('#product-list-table tbody').addEventListener('click', handleProductActions);
+    sidebarProductList.addEventListener('click', e => { const item = e.target.closest('.sidebar-product-item'); if (item) displayInputBlock(item.dataset.code); });
     
-    inputBlockContainer.addEventListener('input', (e) => {
+    // UPDATED: inputBlockContainer listener with strict number validation
+    inputBlockContainer.addEventListener('input', e => {
+        if (e.target.matches('.qty-input, .pcs-input')) {
+            // This regex removes any character that is not a digit (0-9)
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        }
         syncOrderFromInputBlock();
         addEntryRowIfNeeded(e);
     });
+
     inputBlockContainer.addEventListener('keydown', handleKeyboardNavigation);
     
     exportExcelBtn.addEventListener('click', generateAndDownloadExcel);
-    clearAllBtn.addEventListener('click', () => { if (confirm('Clear the entire current order?')) { currentOrder = []; renderCurrentOrderTable(); inputBlockContainer.innerHTML = '<p><i>Please select a product from the list on the left to begin.</i></p>'; document.querySelectorAll('.sidebar-product-item').forEach(item => item.classList.remove('active')); } });
+    emailOrderBtn.addEventListener('click', handleEmailOrder);
+    clearAllBtn.addEventListener('click', () => { if (confirm('Clear the entire current order?')) { currentOrder = []; renderCurrentOrderTable(); inputBlockContainer.innerHTML = '<p><i>Please select a product from the list on the left to begin.</i></p>'; document.querySelectorAll('.sidebar-product-item.active').forEach(i => i.classList.remove('active')); } });
     
     searchInput.addEventListener('input', renderProductLists);
     sortSelect.addEventListener('change', renderProductLists);
-    bgColorPicker.addEventListener('input', handleSidebarColorChange);
-    textColorPicker.addEventListener('input', handleSidebarColorChange);
-    headerBgPicker.addEventListener('input', handleHeaderColorChange);
-    headerTextPicker.addEventListener('input', handleHeaderColorChange);
-    increaseFontBtn.addEventListener('click', () => handleFontSizeChange(1));
-    decreaseFontBtn.addEventListener('click', () => handleFontSizeChange(-1));
-
-    qtyColorPicker.addEventListener('input', handleEntryStyleChange);
-    pcsColorPicker.addEventListener('input', handleEntryStyleChange);
-    qtyBoldToggle.addEventListener('change', handleEntryStyleChange);
-    pcsBoldToggle.addEventListener('change', handleEntryStyleChange);
-
-    function initializeResizer(resizerEl, leftPanelEl) {
-        resizerEl.addEventListener('mousedown', function(e) {
-            e.preventDefault();
-            const startX = e.clientX;
-            const startWidth = leftPanelEl.offsetWidth;
-            
-            function handleMouseMove(e) {
-                const newWidth = startWidth + (e.clientX - startX);
-                leftPanelEl.style.width = newWidth + 'px';
-            }
-            function handleMouseUp() {
-                window.removeEventListener('mousemove', handleMouseMove);
-                window.removeEventListener('mouseup', handleMouseUp);
-            }
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
-        });
-    }
-
-    initializeResizer(document.getElementById('drag-handle-1'), sidebar);
-    initializeResizer(document.getElementById('drag-handle-2'), orderEntryColumn);
-
+    
+    [bgColorPicker, textColorPicker].forEach(el => el.addEventListener('input', handleSidebarColorChange));
+    [sidebarHeaderBgPicker, sidebarHeaderTextPicker].forEach(el => el.addEventListener('input', handleSidebarHeaderColorChange));
+    [headerBgPicker, headerTextPicker].forEach(el => el.addEventListener('input', handleHeaderColorChange));
+    increaseFontBtn.onclick = () => handleFontSizeChange(1);
+    decreaseFontBtn.onclick = () => handleFontSizeChange(-1);
+    [itemColorPicker, itemBoldToggle, qtyColorPicker, pcsColorPicker, qtyBoldToggle, pcsBoldToggle].forEach(el => el.addEventListener('input', handleEntryStyleChange));
+    
+    initializeResizer(document.getElementById('drag-handle-1'), document.getElementById('sidebar'));
+    initializeResizer(document.getElementById('drag-handle-2'), document.querySelector('.order-entry-column'));
     handleDragAndDrop();
 }
 
